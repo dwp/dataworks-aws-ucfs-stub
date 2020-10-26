@@ -1,6 +1,6 @@
-# dataworks-repo-template-terraform
+# dataworks-aws-ucfs-stub
 
-## Description
+## A repo for DataWorks AWS UCFS stub infrastructure
 
 This repo contains Makefile and base terraform folders and jinja2 files to fit the standard pattern.
 This repo is a base to create new Terraform repos, renaming the template files and adding the githooks submodule, making the repo ready for use.

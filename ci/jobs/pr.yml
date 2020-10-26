@@ -1,29 +1,29 @@
 jobs:
-  - name: dataworks-repo-template-terraform-pr
+  - name: dataworks-aws-ucfs-stub-pr
     plan:
-      - get: dataworks-repo-template-terraform-pr
+      - get: dataworks-aws-ucfs-stub-pr
         trigger: true
         version: every
-      - put: dataworks-repo-template-terraform-pr
+      - put: dataworks-aws-ucfs-stub-pr
         params:
-          path: dataworks-repo-template-terraform-pr
+          path: dataworks-aws-ucfs-stub-pr
           status: pending
       - .: (( inject meta.plan.terraform-bootstrap ))
         input_mapping:
-          dataworks-repo-template-terraform: dataworks-repo-template-terraform-pr
+          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-pr
       - .: (( inject meta.plan.terraform-plan ))
         input_mapping:
-          dataworks-repo-template-terraform: dataworks-repo-template-terraform-pr
+          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-pr
         params:
           TF_WORKSPACE: "qa"
           DETAILED_EXITCODE: ""
         on_failure:
-          put: dataworks-repo-template-terraform-pr
+          put: dataworks-aws-ucfs-stub-pr
           params:
-            path: dataworks-repo-template-terraform-pr
+            path: dataworks-aws-ucfs-stub-pr
             status: failure
         on_success:
-          put: dataworks-repo-template-terraform-pr
+          put: dataworks-aws-ucfs-stub-pr
           params:
-            path: dataworks-repo-template-terraform-pr
+            path: dataworks-aws-ucfs-stub-pr
             status: success
