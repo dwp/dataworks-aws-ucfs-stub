@@ -1,8 +1,10 @@
 groups:
   - name: master
     jobs:
-      - development
-      - qa
+      - dataworks-aws-ucfs-stub-development
+      - dataworks-aws-ucfs-stub-qa
+      - dataworks-aws-ucfs-stub-integration
+      - dataworks-aws-ucfs-stub-preprod
   - name: pull-request
     jobs:
       - dataworks-aws-ucfs-stub-pr

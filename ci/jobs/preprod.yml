@@ -1,13 +1,15 @@
 jobs:
-  - name: dataworks-aws-ucfs-stub-qa
+  - name: dataworks-aws-ucfs-stub-preprod
     max_in_flight: 1
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: true
+        passed:
+          - dataworks-aws-ucfs-stub-integration
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-apply ))
         params:
-          TF_WORKSPACE: 'qa'
+          TF_WORKSPACE: 'preprod'
       - .: (( inject meta.plan.terraform-plan ))
         params:
-          TF_WORKSPACE: 'qa'
+          TF_WORKSPACE: 'preprod'
