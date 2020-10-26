@@ -74,7 +74,7 @@ data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
 resource "aws_iam_instance_profile" "ucfs_server_stub" {
   count = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
   name  = "ucfs_server_stub"
-  role  = join("", aws_iam_role.ucfs_server_stub.*.name)#aws_iam_role.ucfs_server_stub.name
+  role  = join("", aws_iam_role.ucfs_server_stub.*.name) #aws_iam_role.ucfs_server_stub.name
 }
 
 resource "aws_security_group" "ucfs_server_stub" {
