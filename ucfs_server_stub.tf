@@ -4,11 +4,11 @@ resource "aws_launch_template" "ucfs_server_stub" {
   instance_type = var.ucfs_server_stub_ec2_instance_type[local.environment]
   vpc_security_group_ids = [
   aws_security_group.ucfs_server_stub.id]
-  user_data                            = base64encode(data.template_file.ucfs_server_stub.rendered)
+  user_data                            = base64encode(join("", data.template_file.ucfs_server_stub.*.rendered))
   instance_initiated_shutdown_behavior = "terminate"
 
   iam_instance_profile {
-    arn = aws_iam_instance_profile.ucfs_server_stub.arn
+    arn = join("", aws_iam_instance_profile.ucfs_server_stub.*.arn)
   }
 
   block_device_mappings {
@@ -50,7 +50,8 @@ resource "aws_launch_template" "ucfs_server_stub" {
 
 resource "aws_iam_role" "ucfs_server_stub" {
   name               = "ucfs_server_stub"
-  assume_role_policy = data.aws_iam_policy_document.ucfs_server_stub_assume_role.json
+  count              = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  assume_role_policy = join("", data.aws_iam_policy_document.ucfs_server_stub_assume_role.*.json) #data.aws_iam_policy_document.ucfs_server_stub_assume_role.json
   tags               = local.common_tags
 }
 
@@ -73,7 +74,7 @@ data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
 resource "aws_iam_instance_profile" "ucfs_server_stub" {
   count = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
   name  = "ucfs_server_stub"
-  role  = aws_iam_role.ucfs_server_stub.name
+  role  = join("", aws_iam_role.ucfs_server_stub.*.name)#aws_iam_role.ucfs_server_stub.name
 }
 
 resource "aws_security_group" "ucfs_server_stub" {
