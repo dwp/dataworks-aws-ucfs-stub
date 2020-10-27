@@ -16,14 +16,14 @@ resources:
     webhook_token: ((dataworks.concourse_github_webhook_token))
     check_every: 720h
 
-  - name: dataworks-aws-ucfs-stub-release
-    type: github-release
-    source:
-      owner: dwp
-      repository: dataworks-aws-ucfs-stub
-      access_token: ((dataworks-secrets.concourse_github_pat))
-    check_every: 5m
-    webhook_token: ((dataworks.concourse_github_webhook_token))
+#  - name: dataworks-aws-ucfs-stub-release
+#    type: github-release
+#    source:
+#      owner: dwp
+#      repository: dataworks-aws-ucfs-stub
+#      access_token: ((dataworks-secrets.concourse_github_pat))
+#    check_every: 5m
+#    webhook_token: ((dataworks.concourse_github_webhook_token))
 
   - name: dw-al2-hardened-ami
     type: ami

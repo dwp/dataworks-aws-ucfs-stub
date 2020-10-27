@@ -49,7 +49,7 @@ meta:
             - -exc
             - |
               export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
-              export TF_VAR_ucfs_server_stub_release=$(cat ../dataworks-aws-ucfs-stub-release/version)
+#              export TF_VAR_ucfs_server_stub_release=$(cat ../dataworks-aws-ucfs-stub-release/version)
               cp ../terraform-bootstrap/terraform.tf .
               terraform workspace show
               terraform init
@@ -60,7 +60,7 @@ meta:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
           - name: dw-al2-hardened-ami
-          - name: dataworks-aws-ucfs-stub-release
+#          - name: dataworks-aws-ucfs-stub-release
             
     terraform-plan:
       task: terraform-plan
@@ -72,7 +72,7 @@ meta:
             - -exc
             - |
               export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
-              export TF_VAR_ucfs_server_stub_release=$(cat ../dataworks-aws-ucfs-stub-release/version)
+#              export TF_VAR_ucfs_server_stub_release=$(cat ../dataworks-aws-ucfs-stub-release/version)
               cp ../terraform-bootstrap/terraform.tf .
               terraform workspace show
               terraform init
@@ -82,7 +82,7 @@ meta:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
           - name: dw-al2-hardened-ami
-          - name: dataworks-aws-ucfs-stub-release
+#          - name: dataworks-aws-ucfs-stub-release
       params:
         DETAILED_EXITCODE: -detailed-exitcode
 
