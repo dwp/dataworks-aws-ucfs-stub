@@ -23,11 +23,11 @@ locals {
   }
 
   ucfs_server_stub_tags_asg = merge(
-  local.common_tags,
-  {
-    Name        = local.ucfs_server_stub_name,
-    Persistence = "Ignore",
-  }
+    local.common_tags,
+    {
+      Name        = local.ucfs_server_stub_name,
+      Persistence = "Ignore",
+    }
   )
 
   ucfs_server_stub_asg_min = {
@@ -38,18 +38,18 @@ locals {
   }
 
   ucfs_server_stub_asg_desired = {
-      development = 1
-      qa          = 1
-      integration = 1
-      preprod     = 1
+    development = 1
+    qa          = 1
+    integration = 1
+    preprod     = 1
   }
 
   ucfs_server_stub_asg_max = {
-      development = 1
-      qa = 1
-      integration = 1
-      preprod = 1
-      production = 1
+    development = 1
+    qa          = 1
+    integration = 1
+    preprod     = 1
+    production  = 1
   }
 
   ucfs_server_stub_truststore_aliases = {
@@ -65,7 +65,7 @@ locals {
     integration = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
     preprod     = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
   }
-  
+
   ucfs_server_stub_name               = "ucfs-server-stub"
   cw_ucfs_server_stub_agent_namespace = "/app/${local.ucfs_server_stub_name}"
 
