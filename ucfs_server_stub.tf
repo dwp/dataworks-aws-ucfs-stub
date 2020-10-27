@@ -13,7 +13,8 @@ resource "aws_launch_template" "ucfs_server_stub" {
   }
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = "/dev/xvdf"
+    no_device   = var.ucfs_server_stub_ebs_volume_size[local.environment] != "0" ? true : false
 
     ebs {
       volume_size           = var.ucfs_server_stub_ebs_volume_size[local.environment]
@@ -43,10 +44,23 @@ resource "aws_launch_template" "ucfs_server_stub" {
         Name        = "ucfs_server_stub"
         Application = "ucfs_server_stub"
         Persistence = "Ignore"
+        SSMEnabled  = local.ucfs_server_stub_ssmenabled[local.environment]
       }
     )
   }
 
+}
+
+resource "aws_acm_certificate" "ucfs_server_stub" {
+  certificate_authority_arn = data.terraform_remote_state.certificate_authority.outputs.root_ca.arn
+  domain_name               = "${local.ucfs_server_stub_name}.${local.env_prefix[local.environment]}dataworks.dwp.gov.uk"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "ucfs-server-stub"
+    },
+  )
 }
 
 resource "aws_iam_role" "ucfs_server_stub" {
@@ -91,13 +105,217 @@ resource "aws_security_group" "ucfs_server_stub" {
   )
 }
 
+resource "aws_security_group_rule" "ucfs_server_stub_to_s3" {
+  description       = "Allow UCFS server stub to reach S3"
+  type              = "egress"
+  prefix_list_ids   = [data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.vpc.prefix_list_ids.s3]
+  protocol          = "tcp"
+  from_port         = 443
+  to_port           = 443
+  security_group_id = aws_security_group.ucfs_server_stub.id
+}
+
+resource "aws_security_group_rule" "egress_ucfs_server_stub_to_internet" {
+  description              = "Allow UCFS server stub access to Internet Proxy (for ACM-PCA)"
+  type                     = "egress"
+  source_security_group_id = data.terraform_remote_state.ingest.outputs.internet_proxy.sg
+  protocol                 = "tcp"
+  from_port                = 3128
+  to_port                  = 3128
+  security_group_id        = aws_security_group.ucfs_server_stub.id
+}
+
+resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_internet" {
+  description              = "Allow UCFS server stub access to Internet Proxy (for ACM-PCA)"
+  type                     = "ingress"
+  source_security_group_id = aws_security_group.ucfs_server_stub.id
+  protocol                 = "tcp"
+  from_port                = 3128
+  to_port                  = 3128
+  security_group_id        = data.terraform_remote_state.ingest.outputs.internet_proxy.sg
+}
+
+data "aws_iam_policy_document" "ucfs_server_stub" {
+  statement {
+    sid    = "AllowACM"
+    effect = "Allow"
+
+    actions = [
+      "acm:*Certificate",
+    ]
+
+    resources = [aws_acm_certificate.ucfs_server_stub.arn]
+  }
+
+  statement {
+    sid    = "GetPublicCerts"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.arn]
+  }
+
+  statement {
+    sid    = "AllowUseDefaultEbsCmk"
+    effect = "Allow"
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey",
+    ]
+
+
+    resources = [data.terraform_remote_state.security-tools.outputs.ebs_cmk.arn]
+  }
+
+  statement {
+    effect = "Allow"
+    sid    = "AllowAccessToConfigBucket"
+
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
+
+
+    resources = [data.terraform_remote_state.common.outputs.config_bucket.arn]
+  }
+
+  statement {
+    effect = "Allow"
+    sid    = "AllowAccessToConfigBucketObjects"
+
+    actions = ["s3:GetObject"]
+
+    resources = ["${data.terraform_remote_state.common.outputs.config_bucket.arn}/*"]
+  }
+
+  statement {
+    sid    = "AllowKMSDecryptionOfS3ConfigBucketObj"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+    ]
+
+    resources = [data.terraform_remote_state.common.outputs.config_bucket_cmk.arn]
+  }
+
+  statement {
+    sid       = "AllowDescribeASGToCheckLaunchTemplate"
+    effect    = "Allow"
+    actions   = ["autoscaling:DescribeAutoScalingGroups"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "AllowDescribeEC2LaunchTemplatesToCheckLatestVersion"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeLaunchTemplates"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "UCFSStubKMS"
+    effect = "Allow"
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey",
+    ]
+
+    resources = [
+      data.terraform_remote_state.ingest.outputs.input_bucket_cmk.arn
+    ]
+  }
+
+  statement {
+    sid     = "AllowAccessToArtefactBucket"
+    effect  = "Allow"
+    actions = ["s3:GetBucketLocation"]
+
+    resources = [data.terraform_remote_state.management_artefact.outputs.artefact_bucket.arn]
+  }
+
+  statement {
+    sid       = "AllowPullFromArtefactBucket"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${data.terraform_remote_state.management_artefact.outputs.artefact_bucket.arn}/*"]
+  }
+
+  statement {
+    sid    = "AllowDecryptArtefactBucket"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+    ]
+
+    resources = [data.terraform_remote_state.management_artefact.outputs.artefact_bucket.cmk_arn]
+  }
+
+  statement {
+    sid    = "AllowUCFSStubToAccessLogGroups"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogStreams"
+    ]
+    resources = [aws_cloudwatch_log_group.ucfs_server_stub_logs.arn]
+  }
+}
+
+resource "aws_autoscaling_group" "ucfs_server_stub" {
+  name_prefix               = "${aws_launch_template.ucfs_server_stub.name}-lt_ver${aws_launch_template.ucfs_server_stub.latest_version}_"
+  min_size                  = local.ucfs_server_stub_asg_min[local.environment]
+  desired_capacity          = local.ucfs_server_stub_asg_desired[local.environment]
+  max_size                  = local.ucfs_server_stub_asg_max[local.environment]
+  health_check_grace_period = 600
+  health_check_type         = "EC2"
+  force_delete              = true
+  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.ingestion_subnets.id[0]
+
+  launch_template {
+    id      = aws_launch_template.ucfs_server_stub.id
+    version = "$Latest"
+  }
+
+  tags = [
+  for key, value in local.ucfs_server_stub_tags_asg :
+  {
+    key                 = key
+    value               = value
+    propagate_at_launch = true
+  }
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [desired_capacity]
+  }
+}
+
 data "template_file" "ucfs_server_stub" {
   count = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
   template = file("ucfs_server_stub_userdata.tpl", {
-    environment_name = local.environment
-    //    truststore_aliases = local.ucfs_server_stub_truststore_aliases[local.environment]
-    //    truststore_certs = local.ucfs_server_stub_truststore_certs[local.environment]
-    //    private_key_alias = "ucfs-server-stub"
+    environment_name                                 = local.environment
+    acm_cert_arn                                     = aws_acm_certificate.ucfs_server_stub.arn
+    truststore_aliases                               = local.ucfs_server_stub_truststore_aliases[local.environment]
+    truststore_certs                                 = local.ucfs_server_stub_truststore_certs[local.environment]
+    private_key_alias                                = "ucfs-server-stub"
     internet_proxy                                   = data.terraform_remote_state.ingest.outputs.internet_proxy.host
     non_proxied_endpoints                            = join(",", data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.vpc.no_proxy_list)
     cwa_namespace                                    = local.cw_ucfs_server_stub_agent_namespace
@@ -108,10 +326,12 @@ data "template_file" "ucfs_server_stub" {
     cwa_mem_metrics_collection_interval              = local.cw_agent_mem_metrics_collection_interval
     cwa_netstat_metrics_collection_interval          = local.cw_agent_netstat_metrics_collection_interval
     cwa_log_group_name                               = aws_cloudwatch_log_group.ucfs_server_stub_logs.name
-    s3_artefact_bucket                               = data.terraform_remote_state.management_artefact.outputs.artefact_bucket.id
+    s3_artefact_bucket                               = data.terraform_remote_state.ingest.outputs.s3_buckets.input_bucket
+    s3_artefact_prefix                               = "business-data/tarballs-mongo/ucdata/"
     s3_scripts_bucket                                = data.terraform_remote_state.common.outputs.config_bucket.id
     s3_file_ucfs_server_stub_logrotate               = aws_s3_bucket_object.ucfs_server_stub_logrotate_script.id
     s3_file_ucfs_server_stub_cloudwatch_sh           = aws_s3_bucket_object.ucfs_server_stub_cloudwatch_script.id
+    s3_file_ucfs_server_stub_post_tarballs_sh        = aws_s3_bucket_object.ucfs_server_stub_post_tarballs_script.id
     ucfs_server_stub_release                         = var.ucfs_server_stub_release
   })
 }
@@ -154,6 +374,24 @@ resource "aws_s3_bucket_object" "ucfs_server_stub_cloudwatch_script" {
     local.common_tags,
     {
       Name = "ucfs-server-stub-cloudwatch-script"
+    },
+  )
+}
+
+data "local_file" "ucfs_server_stub_post_tarballs_script" {
+  filename = "files/post_tarballs.sh"
+}
+
+resource "aws_s3_bucket_object" "ucfs_server_stub_post_tarballs_script" {
+  bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
+  key        = "component/ucfs-server-stub/post_tarballs.sh"
+  content    = data.local_file.ucfs_server_stub_post_tarballs_script.content
+  kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "ucfs-server-stub-post-tarballs-script"
     },
   )
 }

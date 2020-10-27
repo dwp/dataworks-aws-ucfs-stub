@@ -3,6 +3,7 @@
 # Force LC update when any of these files are changed
 echo "${s3_file_ucfs_server_stub_logrotate}" > /dev/null
 echo "${s3_file_ucfs_server_stub_cloudwatch_sh}" > /dev/null
+echo "${s3_file_ucfs_server_stub_post_tarballs_sh}" > /dev/null
 
 export AWS_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d'"' -f4)
 export INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
@@ -28,19 +29,22 @@ sleep 5
 echo "Configuring startup scripts paths"
 S3_URI_LOGROTATE="s3://${s3_scripts_bucket}/${s3_file_ucfs_server_stub_logrotate}"
 S3_CLOUDWATCH_SHELL="s3://${s3_scripts_bucket}/${s3_file_ucfs_server_stub_cloudwatch_sh}"
+S3_POST_TARBALLS="s3://${s3_scripts_bucket}/${s3_file_ucfs_server_stub_post_tarballs_sh}"
 
 echo "Configuring startup file paths"
 mkdir -p /opt/ucfs_server_stub/
 
 echo "Installing startup scripts"
-$(which aws) s3 cp "$S3_URI_LOGROTATE"          /etc/logrotate.d/ucfs_server_stub
-$(which aws) s3 cp "$S3_CLOUDWATCH_SHELL"       /opt/ucfs_server_stub/ucfs_server_stub_cloudwatch.sh
+aws s3 cp "$S3_URI_LOGROTATE"          /etc/logrotate.d/ucfs_server_stub
+aws s3 cp "$S3_CLOUDWATCH_SHELL"       /opt/ucfs_server_stub/ucfs_server_stub_cloudwatch.sh
+aws s3 cp "$S3_POST_TARBALLS"          /opt/ucfs_server_stub/post_tarballs.sh
 
 echo "Allow shutting down"
 echo "ucfs_server_stub     ALL = NOPASSWD: /sbin/shutdown -h now" >> /etc/sudoers
 
 echo "Creating directories"
 mkdir -p /var/log/ucfs_server_stub
+mkdir -p /srv/data/export
 
 echo "Creating user ucfs_server_stub"
 useradd ucfs_server_stub -m
@@ -55,19 +59,18 @@ chmod u+x /opt/ucfs_server_stub/ucfs_server_stub_cloudwatch.sh
 
 echo "${environment_name}" > /opt/ucfs_server_stub/environment
 
-#TODO verify if we needs these certs
 # Retrieve certificates
-#ACM_KEY_PASSWORD=$(uuidgen -r)
+ACM_KEY_PASSWORD=$(uuidgen -r)
 
-#acm-cert-retriever \
-#--acm-cert-arn "${acm_cert_arn}" \
-#--acm-key-passphrase "$ACM_KEY_PASSWORD" \
-#--private-key-alias "${private_key_alias}" \
-#--truststore-aliases "${truststore_aliases}" \
-#--truststore-certs "${truststore_certs}" >> /var/log/acm-cert-retriever.log 2>&1
+acm-cert-retriever \
+--acm-cert-arn "${acm_cert_arn}" \
+--acm-key-passphrase "$ACM_KEY_PASSWORD" \
+--private-key-alias "${private_key_alias}" \
+--truststore-aliases "${truststore_aliases}" \
+--truststore-certs "${truststore_certs}" >> /var/log/acm-cert-retriever.log 2>&1
 
-echo "Retrieving Tarball Ingester artefact..."
-$(which aws) s3 cp s3://${s3_artefact_bucket}/ucfs-server-stub/ucfs-server-stub-${ucfs_server_stub_release}.zip
+echo "Retrieving Synthetic Tarballs..."
+aws s3 cp s3://${s3_artefact_bucket}/${s3_artefact_prefix}  /srv/data/export
 
 echo "Changing permissions and moving files"
 chown ucfs_server_stub:ucfs_server_stub -R  /opt/ucfs_server_stub
@@ -75,5 +78,6 @@ chown ucfs_server_stub:ucfs_server_stub -R  /var/log/ucfs_server_stub
 
 if [[ "${environment_name}" != "production" ]]; then
 echo "Running script to post synthetic tarballs to endpoint"
-echo "Execute placeholder script to post tarballs" >> /var/log/ucfs_server_stub/ucfs_server_stub.out 2>&1
+chmod u+x /opt/ucfs_server_stub/post_tarballs.sh
+/opt/ucfs_server_stub/post_tarballs.sh >> /var/log/ucfs_server_stub/ucfs_server_stub.out 2>&1
 fi

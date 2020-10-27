@@ -19,11 +19,9 @@ resources:
   - name: dataworks-aws-ucfs-stub-release
     type: github-release
     source:
-      github_api_url: https://((dataworks.enterprise_github_url))/api/v3/
-      github_uploads_url: https://((dataworks.enterprise_github_url))/api/uploads/
-      owner: dip
+      owner: dwp
       repository: dataworks-aws-ucfs-stub
-      access_token: ((dataworks-secrets.enterprise_github_pat))
+      access_token: ((dataworks-secrets.concourse_github_pat))
     check_every: 5m
     webhook_token: ((dataworks.concourse_github_webhook_token))
 
