@@ -1,8 +1,6 @@
 jobs:
   - name: dataworks-aws-ucfs-stub-pr
     plan:
-      - get: dataworks-aws-ucfs-stub-release
-        trigger: false
       - get: dataworks-aws-ucfs-stub-pr
         trigger: true
         version: every
