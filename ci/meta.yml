@@ -13,6 +13,7 @@ meta:
           TF_CLI_ARGS_apply: -lock-timeout=300s
           TF_CLI_ARGS_plan: -lock-timeout=300s
           TF_VAR_costcode: ((dataworks.costcode))
+
     terraform-bootstrap:
       task: terraform-bootstrap
       config:
@@ -37,6 +38,7 @@ meta:
           - name: terraform-bootstrap
       params:
         AWS_REGION: eu-west-2
+
     terraform-apply:
       task: terraform-apply
       .: (( inject meta.plan.terraform-common-config ))
@@ -46,6 +48,8 @@ meta:
           args:
             - -exc
             - |
+              export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
+              export TF_VAR_ucfs_server_stub_release=$(cat ../dataworks-aws-ucfs-stub-release/version)
               cp ../terraform-bootstrap/terraform.tf .
               terraform workspace show
               terraform init
@@ -55,6 +59,9 @@ meta:
         inputs:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
+          - name: dw-al2-hardened-ami
+          - name: dataworks-aws-ucfs-stub-release
+            
     terraform-plan:
       task: terraform-plan
       .: (( inject meta.plan.terraform-common-config ))
@@ -64,6 +71,8 @@ meta:
           args:
             - -exc
             - |
+              export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
+              export TF_VAR_ucfs_server_stub_release=$(cat ../dataworks-aws-ucfs-stub-release/version)
               cp ../terraform-bootstrap/terraform.tf .
               terraform workspace show
               terraform init
@@ -72,6 +81,8 @@ meta:
         inputs:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
+          - name: dw-al2-hardened-ami
+          - name: dataworks-aws-ucfs-stub-release
       params:
         DETAILED_EXITCODE: -detailed-exitcode
 

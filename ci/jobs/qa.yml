@@ -4,6 +4,10 @@ jobs:
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: true
+      - get: dw-al2-hardened-ami
+        trigger: false
+      - get: dataworks-aws-ucfs-stub-release
+        trigger: false
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-apply ))
         params:

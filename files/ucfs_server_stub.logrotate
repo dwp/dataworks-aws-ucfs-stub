@@ -1,0 +1,9 @@
+/var/log/ucfs_server_stub/ucfs_server_stub.out {
+    copytruncate
+    missingok
+    notifempty
+    maxsize 1024k
+    rotate 10
+    daily
+    create 0640 ucfs_server_stub ucfs_server_stub
+}
