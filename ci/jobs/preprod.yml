@@ -10,10 +10,6 @@ jobs:
         trigger: false
         passed:
           - dataworks-aws-ucfs-stub-integration
-      - get: dataworks-aws-ucfs-stub-release
-        trigger: false
-        passed:
-          - dataworks-aws-ucfs-stub-integration
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-apply ))
         params:

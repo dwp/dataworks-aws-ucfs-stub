@@ -27,7 +27,6 @@ resource "aws_launch_template" "ucfs_server_stub" {
     s3_file_ucfs_server_stub_logrotate               = aws_s3_bucket_object.ucfs_server_stub_logrotate_script[0].id
     s3_file_ucfs_server_stub_cloudwatch_sh           = aws_s3_bucket_object.ucfs_server_stub_cloudwatch_script[0].id
     s3_file_ucfs_server_stub_post_tarballs_sh        = aws_s3_bucket_object.ucfs_server_stub_post_tarballs_script[0].id
-    ucfs_server_stub_release                         = var.ucfs_server_stub_release
   }))
   instance_initiated_shutdown_behavior = "terminate"
 

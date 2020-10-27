@@ -41,11 +41,6 @@ variable "ucfs_server_stub_ebs_volume_type" {
   }
 }
 
-variable "ucfs_server_stub_release" {
-  description = "Release number for the UCFS server stub release"
-  type        = string
-}
-
 variable "al2_hardened_ami_id" {
   description = "The AMI ID of the latest/pinned Hardened AMI AL2 Image"
   type        = string
