@@ -323,37 +323,37 @@ data "aws_iam_policy_document" "ucfs_server_stub" {
   }
 }
 
-resource "aws_autoscaling_group" "ucfs_server_stub" {
-  count                     = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
-  name_prefix               = "${aws_launch_template.ucfs_server_stub[0].name}-lt_ver${aws_launch_template.ucfs_server_stub[0].latest_version}_"
-  min_size                  = local.ucfs_server_stub_asg_min[local.environment]
-  desired_capacity          = local.ucfs_server_stub_asg_desired[local.environment]
-  max_size                  = local.ucfs_server_stub_asg_max[local.environment]
-  health_check_grace_period = 600
-  health_check_type         = "EC2"
-  force_delete              = true
-  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.ingestion_subnets.id[0]
-
-  launch_template {
-    id      = aws_launch_template.ucfs_server_stub[0].id
-    version = "$Latest"
-  }
-
-  tags = [
-    for key, value in local.ucfs_server_stub_tags_asg :
-    {
-      key                 = key
-      value               = value
-      propagate_at_launch = true
-    }
-  ]
-
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-    desired_capacity]
-  }
-}
+//resource "aws_autoscaling_group" "ucfs_server_stub" {
+//  count                     = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+//  name_prefix               = "${aws_launch_template.ucfs_server_stub[0].name}-lt_ver${aws_launch_template.ucfs_server_stub[0].latest_version}_"
+//  min_size                  = local.ucfs_server_stub_asg_min[local.environment]
+//  desired_capacity          = local.ucfs_server_stub_asg_desired[local.environment]
+//  max_size                  = local.ucfs_server_stub_asg_max[local.environment]
+//  health_check_grace_period = 600
+//  health_check_type         = "EC2"
+//  force_delete              = true
+//  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.ingestion_subnets.id[0]
+//
+//  launch_template {
+//    id      = aws_launch_template.ucfs_server_stub[0].id
+//    version = "$Latest"
+//  }
+//
+//  tags = [
+//    for key, value in local.ucfs_server_stub_tags_asg :
+//    {
+//      key                 = key
+//      value               = value
+//      propagate_at_launch = true
+//    }
+//  ]
+//
+//  lifecycle {
+//    create_before_destroy = true
+//    ignore_changes = [
+//    desired_capacity]
+//  }
+//}
 
 resource "aws_cloudwatch_log_group" "ucfs_server_stub_logs" {
   count             = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
