@@ -36,7 +36,6 @@ resource "aws_launch_template" "ucfs_server_stub" {
 
   block_device_mappings {
     device_name = "/dev/xvdf"
-    no_device   = var.ucfs_server_stub_ebs_volume_size[local.environment] != "0" ? true : false
 
     ebs {
       volume_size           = var.ucfs_server_stub_ebs_volume_size[local.environment]
@@ -91,6 +90,49 @@ resource "aws_iam_role" "ucfs_server_stub" {
   name               = "ucfs_server_stub"
   assume_role_policy = data.aws_iam_policy_document.ucfs_server_stub_assume_role[0].json
   tags               = local.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
+  role       = aws_iam_role.ucfs_server_stub[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "tarball_ingester_cwasp" {
+  role       = aws_iam_role.ucfs_server_stub[0].name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "ucfs_server_stub_ssm_logs" {
+  role       = aws_iam_role.ucfs_server_stub[0].name
+  policy_arn = aws_iam_policy.ucfs_stub_server_ssm_logs.arn
+}
+
+data "aws_iam_policy_document" "ucfs_server_stub_ssm_logs" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:DescribeLogGroups",
+    ]
+    resources = [
+      "arn:aws:logs:${var.region}:${local.account[local.environment]}:log-group::log-stream:*"
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = [
+      "arn:aws:logs:${var.region}:${local.account[local.environment]}:log-group:/aws/ssm/session_manager:log-stream:*",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "ucfs_stub_server_ssm_logs" {
+  name        = "UCFSServerStubSSMLogs"
+  description = "Allow SSM session logging"
+  policy      = data.aws_iam_policy_document.ucfs_server_stub_ssm_logs.json
 }
 
 data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
@@ -162,6 +204,29 @@ resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_internet" {
   to_port                  = 3128
   security_group_id        = data.terraform_remote_state.ingest.outputs.internet_proxy.sg
 }
+
+resource "aws_security_group_rule" "egress_ucfs_server_stub_to_vpc_endpoint" {
+  count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  description              = "Allow UCFS server stub access to VPC endpoint"
+  type                     = "egress"
+  source_security_group_id = data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = aws_security_group.ucfs_server_stub[0].id
+}
+
+resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_vpc_endpoint" {
+  count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  description              = "Allow UCFS server stub access to VPC endpoint"
+  type                     = "ingress"
+  source_security_group_id = aws_security_group.ucfs_server_stub[0].id
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id
+}
+
 
 data "aws_iam_policy_document" "ucfs_server_stub" {
   statement {
@@ -332,21 +397,21 @@ resource "aws_autoscaling_group" "ucfs_server_stub" {
   health_check_grace_period = 600
   health_check_type         = "EC2"
   force_delete              = true
-  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.ingestion_subnets.id[0]
+  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.stub_ucfs_subnets.id[0]
 
   launch_template {
     id      = aws_launch_template.ucfs_server_stub[0].id
     version = "$Latest"
   }
 
-  tags = [
-    for key, value in local.ucfs_server_stub_tags_asg :
-    {
-      key                 = key
-      value               = value
-      propagate_at_launch = true
-    }
-  ]
+  //  tags = [
+  //    for key, value in local.ucfs_server_stub_tags_asg :
+  //    {
+  //      key                 = key
+  //      value               = value
+  //      propagate_at_launch = true
+  //    }
+  //  ]
 
   lifecycle {
     create_before_destroy = true
