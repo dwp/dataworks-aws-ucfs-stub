@@ -62,6 +62,7 @@ echo "${environment_name}" > /opt/ucfs_server_stub/environment
 # Retrieve certificates
 ACM_KEY_PASSWORD=$(uuidgen -r)
 
+echo "Retrieving acm certs"
 acm-cert-retriever \
 --acm-cert-arn "${acm_cert_arn}" \
 --acm-key-passphrase "$ACM_KEY_PASSWORD" \
@@ -70,7 +71,7 @@ acm-cert-retriever \
 --truststore-certs "${truststore_certs}" >> /var/log/acm-cert-retriever.log 2>&1
 
 echo "Retrieving Synthetic Tarballs..."
-aws s3 cp s3://${s3_artefact_bucket}/${s3_artefact_prefix}  /srv/data/export
+aws s3 sync s3://${s3_input_bucket}/${s3_input_prefix}  /srv/data/export
 
 echo "Changing permissions and moving files"
 chown ucfs_server_stub:ucfs_server_stub -R  /opt/ucfs_server_stub
