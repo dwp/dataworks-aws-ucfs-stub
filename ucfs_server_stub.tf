@@ -56,6 +56,7 @@ resource "aws_launch_template" "ucfs_server_stub" {
       Persistence = "Ignore"
     }
   )
+
   tag_specifications {
     resource_type = "instance"
 
@@ -222,7 +223,7 @@ resource "aws_security_group_rule" "egress_ucfs_server_stub_to_vpc_endpoint" {
 
 resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_vpc_endpoint" {
   count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
-  description              = "Allow UCFS server stub access to VPC endpoint"
+  description              = "Allow access to VPC endpoint from UCFS server stub"
   type                     = "ingress"
   source_security_group_id = aws_security_group.ucfs_server_stub[0].id
   protocol                 = "tcp"
@@ -409,14 +410,15 @@ resource "aws_autoscaling_group" "ucfs_server_stub" {
     version = "$Latest"
   }
 
-  //    tags = [
-  //      for key, value in local.ucfs_server_stub_tags_asg :
-  //      {
-  //        key                 = key
-  //        value               = value
-  //        propagate_at_launch = true
-  //      }
-  //    ]
+  dynamic "tag" {
+    for_each = local.ucfs_server_stub_tags_asg
+
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
 
   lifecycle {
     create_before_destroy = true
