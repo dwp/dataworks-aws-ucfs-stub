@@ -1,5 +1,5 @@
 resource "aws_launch_template" "ucfs_server_stub" {
-  count         = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count         = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name_prefix   = "ucfs_server_stub_"
   image_id      = var.al2_hardened_ami_id
   instance_type = var.ucfs_server_stub_ec2_instance_type[local.environment]
@@ -74,7 +74,7 @@ resource "aws_launch_template" "ucfs_server_stub" {
 }
 
 resource "aws_acm_certificate" "ucfs_server_stub" {
-  count                     = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count                     = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   certificate_authority_arn = data.terraform_remote_state.certificate_authority.outputs.root_ca.arn
   domain_name               = "${local.ucfs_server_stub_name}.${local.env_prefix[local.environment]}dataworks.dwp.gov.uk"
 
@@ -87,26 +87,26 @@ resource "aws_acm_certificate" "ucfs_server_stub" {
 }
 
 resource "aws_iam_role" "ucfs_server_stub" {
-  count              = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count              = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name               = "ucfs_server_stub"
   assume_role_policy = data.aws_iam_policy_document.ucfs_server_stub_assume_role[0].json
   tags               = local.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   role       = aws_iam_role.ucfs_server_stub[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role_policy_attachment" "ucfs_server_stub_cwasp" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   role       = aws_iam_role.ucfs_server_stub[0].name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "ucfs_server_stub_ssm_logs" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   role       = aws_iam_role.ucfs_server_stub[0].name
   policy_arn = aws_iam_policy.ucfs_stub_server_ssm_logs[0].arn
 }
@@ -134,14 +134,14 @@ data "aws_iam_policy_document" "ucfs_server_stub_ssm_logs" {
 }
 
 resource "aws_iam_policy" "ucfs_stub_server_ssm_logs" {
-  count       = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "UCFSServerStubSSMLogs"
   description = "Allow SSM session logging"
   policy      = data.aws_iam_policy_document.ucfs_server_stub_ssm_logs.json
 }
 
 data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
-  count = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
 
   statement {
     sid = "EC2AssumeRole"
@@ -157,13 +157,13 @@ data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
 }
 
 resource "aws_iam_instance_profile" "ucfs_server_stub" {
-  count = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name  = "ucfs_server_stub"
   role  = aws_iam_role.ucfs_server_stub[0].name
 }
 
 resource "aws_security_group" "ucfs_server_stub" {
-  count       = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "ucfs_server_stub"
   description = "Control access to and from UCFS export server stub"
   vpc_id      = data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.vpc.id
@@ -177,7 +177,7 @@ resource "aws_security_group" "ucfs_server_stub" {
 }
 
 resource "aws_security_group_rule" "ucfs_server_stub_to_s3" {
-  count       = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   description = "Allow UCFS server stub to reach S3"
   type        = "egress"
   prefix_list_ids = [
@@ -189,7 +189,7 @@ resource "aws_security_group_rule" "ucfs_server_stub_to_s3" {
 }
 
 resource "aws_security_group_rule" "egress_ucfs_server_stub_to_internet" {
-  count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   description              = "Allow UCFS server stub access to Internet Proxy (for ACM-PCA)"
   type                     = "egress"
   source_security_group_id = data.terraform_remote_state.ingest.outputs.stub_internet_proxy.sg
@@ -200,7 +200,7 @@ resource "aws_security_group_rule" "egress_ucfs_server_stub_to_internet" {
 }
 
 resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_internet" {
-  count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   description              = "Allow UCFS server stub access to Internet Proxy (for ACM-PCA)"
   type                     = "ingress"
   source_security_group_id = aws_security_group.ucfs_server_stub[0].id
@@ -211,7 +211,7 @@ resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_internet" {
 }
 
 resource "aws_security_group_rule" "egress_ucfs_server_stub_to_vpc_endpoint" {
-  count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   description              = "Allow UCFS server stub access to VPC endpoint"
   type                     = "egress"
   source_security_group_id = data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id
@@ -222,7 +222,7 @@ resource "aws_security_group_rule" "egress_ucfs_server_stub_to_vpc_endpoint" {
 }
 
 resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_vpc_endpoint" {
-  count                    = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   description              = "Allow access to VPC endpoint from UCFS server stub"
   type                     = "ingress"
   source_security_group_id = aws_security_group.ucfs_server_stub[0].id
@@ -233,14 +233,14 @@ resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_vpc_endpoint" {
 }
 
 resource "aws_iam_policy" "ucfs_server_stub" {
-  count       = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "ucfs_server_stub"
   description = "Policy to allow access for UCFS server stub"
   policy      = data.aws_iam_policy_document.ucfs_server_stub.json
 }
 
 resource "aws_iam_role_policy_attachment" "ucfs_server_stub" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   role       = aws_iam_role.ucfs_server_stub[0].name
   policy_arn = aws_iam_policy.ucfs_server_stub[0].arn
 }
@@ -395,7 +395,7 @@ data "aws_iam_policy_document" "ucfs_server_stub" {
 }
 
 resource "aws_autoscaling_group" "ucfs_server_stub" {
-  count                     = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count                     = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name_prefix               = "${aws_launch_template.ucfs_server_stub[0].name}-lt_ver${aws_launch_template.ucfs_server_stub[0].latest_version}_"
   min_size                  = local.ucfs_server_stub_asg_min[local.environment]
   desired_capacity          = local.ucfs_server_stub_asg_desired[local.environment]
@@ -428,7 +428,7 @@ resource "aws_autoscaling_group" "ucfs_server_stub" {
 }
 
 resource "aws_cloudwatch_log_group" "ucfs_server_stub_logs" {
-  count             = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count             = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name              = "/app/${local.ucfs_server_stub_name}"
   retention_in_days = 180
   tags              = local.common_tags
@@ -439,7 +439,7 @@ data "local_file" "ucfs_server_stub_logrotate_script" {
 }
 
 resource "aws_s3_bucket_object" "ucfs_server_stub_logrotate_script" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   key        = "component/ucfs-server-stub/ucfs-server-stub.logrotate"
   content    = data.local_file.ucfs_server_stub_logrotate_script.content
@@ -458,7 +458,7 @@ data "local_file" "ucfs_server_stub_cloudwatch_script" {
 }
 
 resource "aws_s3_bucket_object" "ucfs_server_stub_cloudwatch_script" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   key        = "component/ucfs-server-stub/ucfs-server-stub-cloudwatch.sh"
   content    = data.local_file.ucfs_server_stub_cloudwatch_script.content
@@ -477,7 +477,7 @@ data "local_file" "ucfs_server_stub_post_tarballs_script" {
 }
 
 resource "aws_s3_bucket_object" "ucfs_server_stub_post_tarballs_script" {
-  count      = local.deploy_ucfs_server_stub[local.environment] ? 1 : 0
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   key        = "component/ucfs-server-stub/post_tarballs.sh"
   content    = data.local_file.ucfs_server_stub_post_tarballs_script.content

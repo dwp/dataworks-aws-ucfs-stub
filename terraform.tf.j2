@@ -1,6 +1,11 @@
 terraform {
   required_version = "{{terraform.terraform_12_version}}"
 
+  required_providers {
+    aws   = "~> 3.13.0"
+    local = "~> 2.0.0"
+  }
+
   backend "s3" {
     bucket         = "{{terraform.state_file_bucket}}"
     key            = "terraform/dataworks/dataworks-aws-ucfs-stub.tfstate"
@@ -12,7 +17,6 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 2.66.0"
   region  = "{{terraform.provider_region}}"
 
   assume_role {
