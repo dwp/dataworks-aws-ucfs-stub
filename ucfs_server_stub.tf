@@ -7,7 +7,7 @@ resource "aws_launch_template" "ucfs_server_stub" {
   aws_security_group.ucfs_server_stub[0].id]
   user_data = base64encode(templatefile("ucfs_server_stub_userdata.tpl", {
     environment_name                                 = local.environment
-    acm_cert_arn                                     = aws_acm_certificate.ucfs_server_stub[0].arn
+    acm_cert_arn                                     = aws_acm_certificate.stub_ucfs_export_server[0].arn
     truststore_aliases                               = local.ucfs_server_stub_truststore_aliases[local.environment]
     truststore_certs                                 = local.ucfs_server_stub_truststore_certs[local.environment]
     private_key_alias                                = "ucfs-server-stub"
@@ -31,7 +31,7 @@ resource "aws_launch_template" "ucfs_server_stub" {
   instance_initiated_shutdown_behavior = "terminate"
 
   iam_instance_profile {
-    arn = aws_iam_instance_profile.ucfs_server_stub[0].arn
+    arn = aws_iam_instance_profile.stub_ucfs_export_server[0].arn
   }
 
   block_device_mappings {
@@ -73,82 +73,26 @@ resource "aws_launch_template" "ucfs_server_stub" {
 
 }
 
-resource "aws_acm_certificate" "ucfs_server_stub" {
+
+resource "aws_acm_certificate" "stub_ucfs_export_server" {
   count                     = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   certificate_authority_arn = data.terraform_remote_state.certificate_authority.outputs.root_ca.arn
-  domain_name               = "${local.ucfs_server_stub_name}.${local.env_prefix[local.environment]}dataworks.dwp.gov.uk"
+  domain_name               = "${local.stub_ucfs_export_server_name}.${local.env_prefix[local.environment]}dataworks.dwp.gov.uk"
 
   tags = merge(
     local.common_tags,
     {
-      Name = "ucfs-server-stub"
+      Name = "stub-ucfs-export-server"
     },
   )
 }
 
-resource "aws_iam_role" "ucfs_server_stub" {
-  count              = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  name               = "ucfs_server_stub"
-  assume_role_policy = data.aws_iam_policy_document.ucfs_server_stub_assume_role[0].json
-  tags               = local.common_tags
-}
-
-resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  role       = aws_iam_role.ucfs_server_stub[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_role_policy_attachment" "ucfs_server_stub_cwasp" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  role       = aws_iam_role.ucfs_server_stub[0].name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "ucfs_server_stub_ssm_logs" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  role       = aws_iam_role.ucfs_server_stub[0].name
-  policy_arn = aws_iam_policy.ucfs_stub_server_ssm_logs[0].arn
-}
-
-data "aws_iam_policy_document" "ucfs_server_stub_ssm_logs" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:DescribeLogGroups",
-    ]
-    resources = [
-      "arn:aws:logs:${var.region}:${local.account[local.environment]}:log-group::log-stream:*"
-    ]
-  }
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-    ]
-    resources = [
-      "arn:aws:logs:${var.region}:${local.account[local.environment]}:log-group:/aws/ssm/session_manager:log-stream:*",
-    ]
-  }
-}
-
-resource "aws_iam_policy" "ucfs_stub_server_ssm_logs" {
-  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  name        = "UCFSServerStubSSMLogs"
-  description = "Allow SSM session logging"
-  policy      = data.aws_iam_policy_document.ucfs_server_stub_ssm_logs.json
-}
-
-data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
-  count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-
+data "aws_iam_policy_document" "stub_ucfs_export_server_assume_role" {
   statement {
     sid = "EC2AssumeRole"
     principals {
-      identifiers = [
-      "ec2.amazonaws.com"]
-      type = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+      type        = "Service"
     }
     actions = [
       "sts:AssumeRole"
@@ -156,10 +100,128 @@ data "aws_iam_policy_document" "ucfs_server_stub_assume_role" {
   }
 }
 
-resource "aws_iam_instance_profile" "ucfs_server_stub" {
+resource "aws_iam_role" "stub_ucfs_export_server" {
+  count              = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  name               = "StubUCFSExportServer"
+  assume_role_policy = data.aws_iam_policy_document.stub_ucfs_export_server_assume_role.json
+  tags               = local.common_tags
+}
+
+resource "aws_iam_instance_profile" "stub_ucfs_export_server" {
   count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  name  = "ucfs_server_stub"
-  role  = aws_iam_role.ucfs_server_stub[0].name
+  name  = "StubUCFSExportServer"
+  role  = aws_iam_role.stub_ucfs_export_server[0].name
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_amazon_ssm_managed_instance_core" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_cloudwatch_agent_server_policy" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+# Allows the instance to describe ASG & Launch Template for termination handling
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_amazon_ec2_readonly_access" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_export_certificate_bucket_read" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = "arn:aws:iam::${local.account[local.environment]}:policy/CertificateBucketRead"
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_config_bucket_read" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = "arn:aws:iam::${local.account[local.environment]}:policy/ConfigBucketRead"
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_ebs_cmk_instance_encrypt_decrypt" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = "arn:aws:iam::${local.account[local.environment]}:policy/EBSCMKInstanceEncryptDecrypt"
+}
+
+data "aws_iam_policy_document" "stub_ucfs_export_server" {
+  statement {
+    sid    = "CertificateExport"
+    effect = "Allow"
+    actions = [
+      "acm:ExportCertificate",
+    ]
+    resources = [aws_acm_certificate.stub_ucfs_export_server[0].arn]
+  }
+
+  statement {
+    sid    = "InputBucketKMSDecrypt"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+    ]
+
+    resources = [
+      data.terraform_remote_state.ingest.outputs.input_bucket_cmk.arn
+    ]
+  }
+
+  statement {
+    sid    = "InputBucketRead"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+
+    resources = [
+    data.terraform_remote_state.ingest.outputs.s3_input_bucket_arn.input_bucket]
+  }
+
+  statement {
+    sid    = "SyntheticTarballsRead"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = [
+      "${data.terraform_remote_state.ingest.outputs.s3_input_bucket_arn.input_bucket}/business-data/tarballs-mongo/ucdata/*"
+    ]
+  }
+
+  statement {
+    sid    = "CloudWatchLogsWrite"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogStreams"
+    ]
+    resources = [
+      aws_cloudwatch_log_group.ucfs_server_stub_logs[0].arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "stub_ucfs_export_server" {
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  name        = "StubUCFSExportServer"
+  description = "Custom policy for Stub UCFS Export Server"
+  policy      = data.aws_iam_policy_document.stub_ucfs_export_server.json
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = aws_iam_policy.stub_ucfs_export_server[0].arn
 }
 
 resource "aws_security_group" "ucfs_server_stub" {
@@ -232,168 +294,6 @@ resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_vpc_endpoint" {
   security_group_id        = data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id
 }
 
-resource "aws_iam_policy" "ucfs_server_stub" {
-  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  name        = "ucfs_server_stub"
-  description = "Policy to allow access for UCFS server stub"
-  policy      = data.aws_iam_policy_document.ucfs_server_stub.json
-}
-
-resource "aws_iam_role_policy_attachment" "ucfs_server_stub" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  role       = aws_iam_role.ucfs_server_stub[0].name
-  policy_arn = aws_iam_policy.ucfs_server_stub[0].arn
-}
-
-
-data "aws_iam_policy_document" "ucfs_server_stub" {
-  statement {
-    sid    = "AllowACM"
-    effect = "Allow"
-
-    actions = [
-      "acm:*Certificate",
-    ]
-
-    resources = [
-    aws_acm_certificate.ucfs_server_stub[0].arn]
-  }
-
-  statement {
-    sid    = "GetPublicCerts"
-    effect = "Allow"
-
-    actions = [
-      "s3:GetObject",
-    ]
-
-    resources = [
-    "${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.arn}/*"]
-  }
-
-  statement {
-    sid    = "AllowUseDefaultEbsCmk"
-    effect = "Allow"
-
-    actions = [
-      "kms:Encrypt",
-      "kms:Decrypt",
-      "kms:ReEncrypt*",
-      "kms:GenerateDataKey*",
-      "kms:DescribeKey",
-    ]
-
-
-    resources = [
-    data.terraform_remote_state.security-tools.outputs.ebs_cmk.arn]
-  }
-
-  statement {
-    effect = "Allow"
-    sid    = "AllowAccessToConfigBucket"
-
-    actions = [
-      "s3:ListBucket",
-      "s3:GetBucketLocation",
-    ]
-
-
-    resources = [
-    data.terraform_remote_state.common.outputs.config_bucket.arn]
-  }
-
-  statement {
-    effect = "Allow"
-    sid    = "AllowAccessToConfigBucketObjects"
-
-    actions = [
-    "s3:GetObject"]
-
-    resources = [
-    "${data.terraform_remote_state.common.outputs.config_bucket.arn}/*"]
-  }
-
-  statement {
-    sid    = "AllowKMSDecryptionOfS3ConfigBucketObj"
-    effect = "Allow"
-
-    actions = [
-      "kms:Decrypt",
-      "kms:GenerateDataKey",
-    ]
-
-    resources = [
-    data.terraform_remote_state.common.outputs.config_bucket_cmk.arn]
-  }
-
-  statement {
-    sid    = "AllowDescribeASGToCheckLaunchTemplate"
-    effect = "Allow"
-    actions = [
-    "autoscaling:DescribeAutoScalingGroups"]
-    resources = [
-    "*"]
-  }
-
-  statement {
-    sid    = "AllowDescribeEC2LaunchTemplatesToCheckLatestVersion"
-    effect = "Allow"
-    actions = [
-    "ec2:DescribeLaunchTemplates"]
-    resources = [
-    "*"]
-  }
-
-  statement {
-    sid    = "AllowInputBucketKMS"
-    effect = "Allow"
-
-    actions = [
-      "kms:Encrypt",
-      "kms:Decrypt",
-      "kms:ReEncrypt*",
-      "kms:GenerateDataKey*",
-      "kms:DescribeKey",
-    ]
-
-    resources = [
-      data.terraform_remote_state.ingest.outputs.input_bucket_cmk.arn
-    ]
-  }
-
-  statement {
-    sid    = "AllowAccessToInputBucket"
-    effect = "Allow"
-    actions = [
-      "s3:ListBucket",
-    "s3:GetBucketLocation"]
-
-    resources = [
-    data.terraform_remote_state.ingest.outputs.s3_input_bucket_arn.input_bucket]
-  }
-
-  statement {
-    sid    = "AllowPullFromInputBucket"
-    effect = "Allow"
-    actions = [
-    "s3:GetObject"]
-    resources = [
-    "${data.terraform_remote_state.ingest.outputs.s3_input_bucket_arn.input_bucket}/*"]
-  }
-
-  statement {
-    sid    = "AllowUCFSStubToAccessLogGroups"
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-      "logs:DescribeLogStreams"
-    ]
-    resources = [
-    aws_cloudwatch_log_group.ucfs_server_stub_logs[0].arn]
-  }
-}
-
 resource "aws_autoscaling_group" "ucfs_server_stub" {
   count                     = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name_prefix               = "${aws_launch_template.ucfs_server_stub[0].name}-lt_ver${aws_launch_template.ucfs_server_stub[0].latest_version}_"
@@ -429,7 +329,7 @@ resource "aws_autoscaling_group" "ucfs_server_stub" {
 
 resource "aws_cloudwatch_log_group" "ucfs_server_stub_logs" {
   count             = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  name              = "/app/${local.ucfs_server_stub_name}"
+  name              = "/app/${local.stub_ucfs_export_server_name}"
   retention_in_days = 180
   tags              = local.common_tags
 }

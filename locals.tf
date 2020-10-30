@@ -28,7 +28,7 @@ locals {
   ucfs_server_stub_tags_asg = merge(
     local.common_tags,
     {
-      Name        = local.ucfs_server_stub_name,
+      Name        = local.stub_ucfs_export_server_name,
       Persistence = "Ignore",
     }
   )
@@ -72,8 +72,8 @@ locals {
     production  = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
   }
 
-  ucfs_server_stub_name               = "ucfs-server-stub"
-  cw_ucfs_server_stub_agent_namespace = "/app/${local.ucfs_server_stub_name}"
+  stub_ucfs_export_server_name        = "stub-ucfs-export-server"
+  cw_ucfs_server_stub_agent_namespace = "/app/${local.stub_ucfs_export_server_name}"
 
   cw_agent_metrics_collection_interval                  = 60
   cw_agent_cpu_metrics_collection_interval              = 60
