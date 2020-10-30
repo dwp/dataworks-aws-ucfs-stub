@@ -8,7 +8,7 @@ locals {
     production  = false
   }
 
-  ucfs_server_stub_ssmenabled = {
+  stub_ucfs_export_server_ssmenabled = {
     development = true
     qa          = true
     integration = true
@@ -25,7 +25,7 @@ locals {
     production  = ""
   }
 
-  ucfs_server_stub_tags_asg = merge(
+  stub_ucfs_export_server_tags_asg = merge(
     local.common_tags,
     {
       Name        = local.stub_ucfs_export_server_name,
@@ -33,7 +33,7 @@ locals {
     }
   )
 
-  ucfs_server_stub_asg_min = {
+  stub_ucfs_export_server_asg_min = {
     development = 0
     qa          = 0
     integration = 0
@@ -41,7 +41,7 @@ locals {
     production  = 0
   }
 
-  ucfs_server_stub_asg_desired = {
+  stub_ucfs_export_server_asg_desired = {
     development = 1
     qa          = 1
     integration = 1
@@ -49,7 +49,7 @@ locals {
     production  = 0
   }
 
-  ucfs_server_stub_asg_max = {
+  stub_ucfs_export_server_asg_max = {
     development = 1
     qa          = 1
     integration = 1
@@ -57,7 +57,7 @@ locals {
     production  = 0
   }
 
-  ucfs_server_stub_truststore_aliases = {
+  stub_ucfs_export_server_truststore_aliases = {
     development = "ucfs_ca"
     qa          = "ucfs_ca"
     integration = "ucfs_ca"
@@ -65,15 +65,15 @@ locals {
     production  = "ucfs_ca"
   }
 
-  ucfs_server_stub_truststore_certs = {
+  stub_ucfs_export_server_truststore_certs = {
     development = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
     qa          = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
     integration = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
     production  = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
   }
 
-  stub_ucfs_export_server_name        = "stub-ucfs-export-server"
-  cw_ucfs_server_stub_agent_namespace = "/app/${local.stub_ucfs_export_server_name}"
+  stub_ucfs_export_server_name               = "stub-ucfs-export-server"
+  cw_stub_ucfs_export_server_agent_namespace = "/app/${local.stub_ucfs_export_server_name}"
 
   cw_agent_metrics_collection_interval                  = 60
   cw_agent_cpu_metrics_collection_interval              = 60
