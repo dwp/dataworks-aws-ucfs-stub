@@ -135,7 +135,7 @@ resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_amazon_ec2_re
 resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_export_certificate_bucket_read" {
   count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   role       = aws_iam_role.stub_ucfs_export_server[0].name
-  policy_arn = "arn:aws:iam::${local.account[local.environment]}:policy/CertificateBucketRead"
+  policy_arn = "arn:aws:iam::${local.account[local.environment]}:policy/CertificatesBucketRead"
 }
 
 resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_config_bucket_read" {
