@@ -227,32 +227,31 @@ resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server" {
 resource "aws_security_group" "ucfs_server_stub" {
   count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "ucfs_server_stub"
-  description = "Control access to and from UCFS export server stub"
+  description = "Control access to and from stub UCFS export server"
   vpc_id      = data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.vpc.id
 
   tags = merge(
     local.common_tags,
     {
-      "Name" = "ucfs_server_stub"
+      "Name" = local.stub_ucfs_export_server_name
     }
   )
 }
 
-resource "aws_security_group_rule" "ucfs_server_stub_to_s3" {
-  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  description = "Allow UCFS server stub to reach S3"
-  type        = "egress"
-  prefix_list_ids = [
-  data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.prefix_list_ids.s3]
+resource "aws_security_group_rule" "stub_ucfs_expport_server_s3" {
+  count             = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  description       = "Allow stub UCFS export server to reach S3"
+  type              = "egress"
+  prefix_list_ids   = [data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.prefix_list_ids.s3]
   protocol          = "tcp"
   from_port         = 443
   to_port           = 443
   security_group_id = aws_security_group.ucfs_server_stub[0].id
 }
 
-resource "aws_security_group_rule" "egress_ucfs_server_stub_to_internet" {
+resource "aws_security_group_rule" "egress_stub_ucfs_export_server_internet" {
   count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  description              = "Allow UCFS server stub access to Internet Proxy (for ACM-PCA)"
+  description              = "Allow stub UCFS export server access to Internet Proxy (for ACM-PCA)"
   type                     = "egress"
   source_security_group_id = data.terraform_remote_state.ingest.outputs.stub_internet_proxy.sg
   protocol                 = "tcp"
@@ -261,9 +260,9 @@ resource "aws_security_group_rule" "egress_ucfs_server_stub_to_internet" {
   security_group_id        = aws_security_group.ucfs_server_stub[0].id
 }
 
-resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_internet" {
+resource "aws_security_group_rule" "ingress_stub_ucfs_export_server_internet" {
   count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  description              = "Allow UCFS server stub access to Internet Proxy (for ACM-PCA)"
+  description              = "Allow stub UCFS export server access to Internet Proxy (for ACM-PCA)"
   type                     = "ingress"
   source_security_group_id = aws_security_group.ucfs_server_stub[0].id
   protocol                 = "tcp"
@@ -272,9 +271,9 @@ resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_internet" {
   security_group_id        = data.terraform_remote_state.ingest.outputs.stub_internet_proxy.sg
 }
 
-resource "aws_security_group_rule" "egress_ucfs_server_stub_to_vpc_endpoint" {
+resource "aws_security_group_rule" "egress_stub_ucfs_export_server_vpc_endpoint" {
   count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  description              = "Allow UCFS server stub access to VPC endpoint"
+  description              = "Allow stub UCFS export server access to VPC endpoints"
   type                     = "egress"
   source_security_group_id = data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id
   protocol                 = "tcp"
@@ -283,9 +282,9 @@ resource "aws_security_group_rule" "egress_ucfs_server_stub_to_vpc_endpoint" {
   security_group_id        = aws_security_group.ucfs_server_stub[0].id
 }
 
-resource "aws_security_group_rule" "ingress_ucfs_server_stub_to_vpc_endpoint" {
+resource "aws_security_group_rule" "ingress_stub_ucfs_export_server_vpc_endpoint" {
   count                    = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  description              = "Allow access to VPC endpoint from UCFS server stub"
+  description              = "Allow stub UCFS export server access to VPC endpoints"
   type                     = "ingress"
   source_security_group_id = aws_security_group.ucfs_server_stub[0].id
   protocol                 = "tcp"
