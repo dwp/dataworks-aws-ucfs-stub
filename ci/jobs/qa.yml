@@ -4,8 +4,8 @@ jobs:
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: true
-        passed:
-          - development
+      - get: dw-al2-hardened-ami
+        trigger: false
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-apply ))
         params:

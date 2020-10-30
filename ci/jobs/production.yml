@@ -1,11 +1,19 @@
 jobs:
-  - name: development
+  - name: production
     max_in_flight: 1
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: true
+        passed:
+          - preprod
       - get: dw-al2-hardened-ami
-        trigger: true
+        trigger: false
+        passed:
+          - preprod
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-apply ))
+        params:
+          TF_WORKSPACE: 'production'
       - .: (( inject meta.plan.terraform-plan ))
+        params:
+          TF_WORKSPACE: 'production'
