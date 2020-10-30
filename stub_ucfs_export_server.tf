@@ -52,8 +52,7 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "stub_ucfs_export_server"
-      Persistence = "Ignore"
+      Name = "stub_ucfs_export_server"
     }
   )
 
@@ -63,10 +62,11 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
     tags = merge(
       local.common_tags,
       {
-        Name        = "stub_ucfs_export_server"
-        Application = "stub_ucfs_export_server"
-        Persistence = "Ignore"
-        SSMEnabled  = local.stub_ucfs_export_server_ssmenabled[local.environment]
+        Name         = "stub_ucfs_export_server"
+        Application  = "stub_ucfs_export_server"
+        Persistence  = "Ignore"
+        AutoShutdown = "False"
+        SSMEnabled   = local.stub_ucfs_export_server_ssmenabled[local.environment]
       }
     )
   }
@@ -82,7 +82,7 @@ resource "aws_acm_certificate" "stub_ucfs_export_server" {
   tags = merge(
     local.common_tags,
     {
-      Name = "stub-ucfs-export-server"
+      Name = local.stub_ucfs_export_server_name
     },
   )
 }
@@ -238,7 +238,7 @@ resource "aws_security_group" "stub_ucfs_export_server" {
   )
 }
 
-resource "aws_security_group_rule" "stub_ucfs_expport_server_s3" {
+resource "aws_security_group_rule" "stub_ucfs_export_server_s3" {
   count             = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   description       = "Allow stub UCFS export server to reach S3"
   type              = "egress"
@@ -321,8 +321,7 @@ resource "aws_autoscaling_group" "stub_ucfs_export_server" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [
-    desired_capacity]
+    ignore_changes        = [desired_capacity]
   }
 }
 
@@ -347,7 +346,7 @@ resource "aws_s3_bucket_object" "stub_ucfs_export_server_logrotate_script" {
   tags = merge(
     local.common_tags,
     {
-      Name = "ucfs-server-stub-logrotate-script"
+      Name = "stub-ucfs-export-server-logrotate-script"
     },
   )
 }
@@ -359,14 +358,14 @@ data "local_file" "stub_ucfs_export_server_cloudwatch_script" {
 resource "aws_s3_bucket_object" "stub_ucfs_export_server_cloudwatch_script" {
   count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
-  key        = "component/ucfs-server-stub/ucfs-server-stub-cloudwatch.sh"
+  key        = "component/stub-ucfs-export-server/stub-ucfs-export-server-cloudwatch.sh"
   content    = data.local_file.stub_ucfs_export_server_cloudwatch_script.content
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
 
   tags = merge(
     local.common_tags,
     {
-      Name = "ucfs-server-stub-cloudwatch-script"
+      Name = "stub-ucfs-export-server-cloudwatch-script"
     },
   )
 }
@@ -378,14 +377,14 @@ data "local_file" "stub_ucfs_export_server_post_tarballs_script" {
 resource "aws_s3_bucket_object" "stub_ucfs_export_server_post_tarballs_script" {
   count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
-  key        = "component/ucfs-server-stub/post_tarballs.sh"
+  key        = "component/stub-ucfs-export-server/post_tarballs.sh"
   content    = data.local_file.stub_ucfs_export_server_post_tarballs_script.content
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
 
   tags = merge(
     local.common_tags,
     {
-      Name = "ucfs-server-stub-post-tarballs-script"
+      Name = "stub-ucfs-export-server-post-tarballs-script"
     },
   )
 }
