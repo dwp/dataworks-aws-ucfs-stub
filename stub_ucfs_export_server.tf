@@ -151,6 +151,7 @@ resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_ebs_cmk_insta
 }
 
 data "aws_iam_policy_document" "stub_ucfs_export_server" {
+  count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   statement {
     sid    = "CertificateExport"
     effect = "Allow"
@@ -215,7 +216,7 @@ resource "aws_iam_policy" "stub_ucfs_export_server" {
   count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "StubUCFSExportServer"
   description = "Custom policy for Stub UCFS Export Server"
-  policy      = data.aws_iam_policy_document.stub_ucfs_export_server.json
+  policy      = data.aws_iam_policy_document.stub_ucfs_export_server[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server" {
