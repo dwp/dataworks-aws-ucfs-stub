@@ -1,9 +1,9 @@
-/var/log/ucfs_server_stub/ucfs_server_stub.out {
+/var/log/stub_ucfs_export_server/stub_ucfs_export_server.out {
     copytruncate
     missingok
     notifempty
     maxsize 1024k
     rotate 10
     daily
-    create 0640 ucfs_server_stub ucfs_server_stub
+    create 0640 stub_ucfs_export_server dip_export
 }

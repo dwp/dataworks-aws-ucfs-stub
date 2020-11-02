@@ -46,8 +46,9 @@ echo "Creating directories"
 mkdir -p /var/log/stub_ucfs_export_server
 mkdir -p /srv/data/export
 
-echo "Creating user stub_ucfs_export_server"
-useradd stub_ucfs_export_server -m
+echo "Creating user dip_export"
+useradd dip_export -m -s /sbin/nologin
+
 
 echo "Setup cloudwatch logs"
 chmod u+x /opt/stub_ucfs_export_server/stub_ucfs_export_server_cloudwatch.sh
@@ -70,15 +71,11 @@ acm-cert-retriever \
 --truststore-aliases "${truststore_aliases}" \
 --truststore-certs "${truststore_certs}" >> /var/log/acm-cert-retriever.log 2>&1
 
-echo "Retrieving Synthetic Tarballs..."
-aws s3 sync s3://${s3_input_bucket}/${s3_input_prefix}  /srv/data/export
-
-echo "Changing permissions and moving files"
-chown stub_ucfs_export_server:stub_ucfs_export_server -R  /opt/stub_ucfs_export_server
-chown stub_ucfs_export_server:stub_ucfs_export_server -R  /var/log/stub_ucfs_export_server
+echo "Changing permissions"
+chown dip_export:dip_export -R  /opt/stub_ucfs_export_server /var/log/stub_ucfs_export_server /srv/data/export
 
 if [[ "${environment_name}" != "production" ]]; then
 echo "Running script to post synthetic tarballs to endpoint"
 chmod u+x /opt/stub_ucfs_export_server/post_tarballs.sh
-/opt/stub_ucfs_export_server/post_tarballs.sh >> /var/log/stub_ucfs_export_server/stub_ucfs_export_server.out 2>&1
+su -s /bin/bash -c '/opt/stub_ucfs_export_server/post_tarballs.sh >> /var/log/stub_ucfs_export_server/stub_ucfs_export_server.out 2>&1' dip_export
 fi

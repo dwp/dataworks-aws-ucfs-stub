@@ -150,9 +150,9 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<CWAGEN
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/ucfs_server_stub/ucfs_server_stub.out",
+            "file_path": "/var/log/stub_ucfs_export_server/stub_ucfs_export_server.out",
             "log_group_name": "${cwa_log_group_name}",
-            "log_stream_name": "ucfs_server_stub.out",
+            "log_stream_name": "stub_ucfs_export_server.out",
             "timezone": "UTC"
           }
         ]
