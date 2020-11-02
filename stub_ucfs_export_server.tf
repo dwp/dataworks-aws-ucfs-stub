@@ -1,3 +1,16 @@
+resource "aws_vpc_endpoint" "tarball_ingester" {
+  vpc_id             = data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.vpc.id
+  service_name       = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_endpoint.service_name
+  security_group_ids = [data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id]
+  vpc_endpoint_type  = "Interface"
+}
+
+resource "aws_vpc_endpoint_subnet_association" "tarball_ingester" {
+  count           = length(data.terraform_remote_state.ingest.outputs.stub_ucfs_subnets.id)
+  vpc_endpoint_id = aws_vpc_endpoint.tarball_ingester.id
+  subnet_id       = element(data.terraform_remote_state.ingest.outputs.stub_ucfs_subnets.id, count.index)
+}
+
 resource "aws_launch_template" "stub_ucfs_export_server" {
   count         = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name_prefix   = "stub_ucfs_export_server_"
@@ -301,7 +314,7 @@ resource "aws_autoscaling_group" "stub_ucfs_export_server" {
   health_check_grace_period = 600
   health_check_type         = "EC2"
   force_delete              = true
-  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.stub_ucfs_subnets.id[0]
+  vpc_zone_identifier       = data.terraform_remote_state.ingest.outputs.stub_ucfs_subnets.id
 
   launch_template {
     id      = aws_launch_template.stub_ucfs_export_server[0].id
