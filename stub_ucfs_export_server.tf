@@ -5,7 +5,7 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
   instance_type = var.stub_ucfs_export_server_ec2_instance_type[local.environment]
   vpc_security_group_ids = [
   aws_security_group.stub_ucfs_export_server[0].id]
-  user_data = base64encode(templatefile("stub_ucfs_export_server_userdata.tpl", {
+  user_data = base64encode(templatefile("files/stub_ucfs_export_server_userdata.tpl", {
     environment_name                                 = local.environment
     acm_cert_arn                                     = aws_acm_certificate.stub_ucfs_export_server[0].arn
     truststore_aliases                               = local.stub_ucfs_export_server_truststore_aliases[local.environment]
@@ -21,8 +21,6 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
     cwa_mem_metrics_collection_interval              = local.cw_agent_mem_metrics_collection_interval
     cwa_netstat_metrics_collection_interval          = local.cw_agent_netstat_metrics_collection_interval
     cwa_log_group_name                               = aws_cloudwatch_log_group.stub_ucfs_export_server_logs[0].name
-    s3_input_bucket                                  = data.terraform_remote_state.ingest.outputs.s3_buckets.input_bucket
-    s3_input_prefix                                  = "business-data/tarballs-mongo/ucdata/"
     s3_scripts_bucket                                = data.terraform_remote_state.common.outputs.config_bucket.id
     s3_file_stub_ucfs_export_server_logrotate        = aws_s3_bucket_object.stub_ucfs_export_server_logrotate_script[0].id
     s3_file_stub_ucfs_export_server_cloudwatch_sh    = aws_s3_bucket_object.stub_ucfs_export_server_cloudwatch_script[0].id
@@ -338,11 +336,10 @@ data "local_file" "stub_ucfs_export_server_logrotate_script" {
 }
 
 resource "aws_s3_bucket_object" "stub_ucfs_export_server_logrotate_script" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
-  key        = "component/ucfs-server-stub/ucfs-server-stub.logrotate"
-  content    = data.local_file.stub_ucfs_export_server_logrotate_script.content
-  kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
+  count   = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
+  key     = "component/ucfs-server-stub/ucfs-server-stub.logrotate"
+  content = data.local_file.stub_ucfs_export_server_logrotate_script.content
 
   tags = merge(
     local.common_tags,
@@ -357,11 +354,10 @@ data "local_file" "stub_ucfs_export_server_cloudwatch_script" {
 }
 
 resource "aws_s3_bucket_object" "stub_ucfs_export_server_cloudwatch_script" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
-  key        = "component/stub-ucfs-export-server/stub-ucfs-export-server-cloudwatch.sh"
-  content    = data.local_file.stub_ucfs_export_server_cloudwatch_script.content
-  kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
+  count   = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
+  key     = "component/stub-ucfs-export-server/stub-ucfs-export-server-cloudwatch.sh"
+  content = data.local_file.stub_ucfs_export_server_cloudwatch_script.content
 
   tags = merge(
     local.common_tags,
@@ -371,16 +367,17 @@ resource "aws_s3_bucket_object" "stub_ucfs_export_server_cloudwatch_script" {
   )
 }
 
-data "local_file" "stub_ucfs_export_server_post_tarballs_script" {
-  filename = "files/post_tarballs.sh"
-}
-
 resource "aws_s3_bucket_object" "stub_ucfs_export_server_post_tarballs_script" {
-  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
-  key        = "component/stub-ucfs-export-server/post_tarballs.sh"
-  content    = data.local_file.stub_ucfs_export_server_post_tarballs_script.content
-  kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
+  count  = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  bucket = data.terraform_remote_state.common.outputs.config_bucket.id
+  key    = "component/stub-ucfs-export-server/post_tarballs.sh"
+
+  content = templatefile("files/post_tarballs.sh", {
+    s3_input_bucket              = data.terraform_remote_state.ingest.outputs.s3_buckets.input_bucket
+    s3_input_prefix              = "business-data/tarballs-mongo/ucdata/"
+    tarball_ingester_s3_endpoint = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
+    tarball_ingester_s3_bucket   = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_minio_s3_bucket_name
+  })
 
   tags = merge(
     local.common_tags,
