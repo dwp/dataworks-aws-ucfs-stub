@@ -6,7 +6,6 @@ echo "${s3_file_stub_ucfs_export_server_cloudwatch_sh}" > /dev/null
 echo "${s3_file_stub_ucfs_export_server_post_tarballs_sh}" > /dev/null
 
 export AWS_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d'"' -f4)
-export INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 
 /etc/init.d/awsagent stop
 sleep 5
@@ -47,8 +46,8 @@ chmod u+x /opt/stub_ucfs_export_server/stub_ucfs_export_server_cloudwatch.sh
 echo "${environment_name}" > /opt/stub_ucfs_export_server/environment
 
 export HTTP_PROXY="http://${internet_proxy}:3128"
-export HTTPS_PROXY="$https_proxy"
-export NO_PROXY="$no_proxy"
+export HTTPS_PROXY="$HTTP_PROXY"
+export NO_PROXY="${non_proxied_endpoints}"
 
 echo "Configure AWS Inspector"
 cat > /etc/init.d/awsagent.env << AWSAGENTPROXYCONFIG
