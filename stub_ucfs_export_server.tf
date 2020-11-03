@@ -28,25 +28,28 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
   vpc_security_group_ids = [
   aws_security_group.stub_ucfs_export_server[0].id]
   user_data = base64encode(templatefile("files/stub_ucfs_export_server_userdata.tpl", {
-    environment_name                                 = local.environment
-    acm_cert_arn                                     = aws_acm_certificate.stub_ucfs_export_server[0].arn
-    truststore_aliases                               = local.stub_ucfs_export_server_truststore_aliases[local.environment]
-    truststore_certs                                 = local.stub_ucfs_export_server_truststore_certs[local.environment]
-    private_key_alias                                = "ucfs-server-stub"
-    internet_proxy                                   = data.terraform_remote_state.ingest.outputs.stub_internet_proxy.host
-    non_proxied_endpoints                            = join(",", data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.no_proxy_list)
-    cwa_namespace                                    = local.cw_stub_ucfs_export_server_agent_namespace
-    cwa_metrics_collection_interval                  = local.cw_agent_metrics_collection_interval
-    cwa_cpu_metrics_collection_interval              = local.cw_agent_cpu_metrics_collection_interval
-    cwa_disk_measurement_metrics_collection_interval = local.cw_agent_disk_measurement_metrics_collection_interval
-    cwa_disk_io_metrics_collection_interval          = local.cw_agent_disk_io_metrics_collection_interval
-    cwa_mem_metrics_collection_interval              = local.cw_agent_mem_metrics_collection_interval
-    cwa_netstat_metrics_collection_interval          = local.cw_agent_netstat_metrics_collection_interval
-    cwa_log_group_name                               = aws_cloudwatch_log_group.stub_ucfs_export_server_logs[0].name
-    s3_scripts_bucket                                = data.terraform_remote_state.common.outputs.config_bucket.id
-    s3_file_stub_ucfs_export_server_logrotate        = aws_s3_bucket_object.stub_ucfs_export_server_logrotate_script[0].id
-    s3_file_stub_ucfs_export_server_cloudwatch_sh    = aws_s3_bucket_object.stub_ucfs_export_server_cloudwatch_script[0].id
-    s3_file_stub_ucfs_export_server_post_tarballs_sh = aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].id
+    environment_name                                     = local.environment
+    acm_cert_arn                                         = aws_acm_certificate.stub_ucfs_export_server[0].arn
+    truststore_aliases                                   = local.stub_ucfs_export_server_truststore_aliases[local.environment]
+    truststore_certs                                     = local.stub_ucfs_export_server_truststore_certs[local.environment]
+    private_key_alias                                    = "ucfs-server-stub"
+    internet_proxy                                       = data.terraform_remote_state.ingest.outputs.stub_internet_proxy.host
+    non_proxied_endpoints                                = join(",", data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.no_proxy_list)
+    cwa_namespace                                        = local.cw_stub_ucfs_export_server_agent_namespace
+    cwa_metrics_collection_interval                      = local.cw_agent_metrics_collection_interval
+    cwa_cpu_metrics_collection_interval                  = local.cw_agent_cpu_metrics_collection_interval
+    cwa_disk_measurement_metrics_collection_interval     = local.cw_agent_disk_measurement_metrics_collection_interval
+    cwa_disk_io_metrics_collection_interval              = local.cw_agent_disk_io_metrics_collection_interval
+    cwa_mem_metrics_collection_interval                  = local.cw_agent_mem_metrics_collection_interval
+    cwa_netstat_metrics_collection_interval              = local.cw_agent_netstat_metrics_collection_interval
+    cwa_log_group_name                                   = aws_cloudwatch_log_group.stub_ucfs_export_server_logs[0].name
+    s3_scripts_bucket                                    = data.terraform_remote_state.common.outputs.config_bucket.id
+    s3_file_stub_ucfs_export_server_logrotate            = aws_s3_bucket_object.stub_ucfs_export_server_logrotate_script[0].id
+    s3_file_stub_ucfs_export_server_logrotate_md5        = md5(data.local_file.stub_ucfs_export_server_logrotate_script.content)
+    s3_file_stub_ucfs_export_server_cloudwatch_sh        = aws_s3_bucket_object.stub_ucfs_export_server_cloudwatch_script[0].id
+    s3_file_stub_ucfs_export_server_cloudwatch_sh_md5    = md5(data.local_file.stub_ucfs_export_server_cloudwatch_script.content)
+    s3_file_stub_ucfs_export_server_post_tarballs_sh     = aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].id
+    s3_file_stub_ucfs_export_server_post_tarballs_sh_md5 = md5(aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].content)
   }))
   instance_initiated_shutdown_behavior = "terminate"
 
