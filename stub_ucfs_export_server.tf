@@ -174,8 +174,9 @@ resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_ebs_cmk_insta
 }
 
 resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_secrets_manager" {
-  role       = aws_iam_role.stub_ucfs_export_server.name
-  policy_arn = aws_iam_policy.stub_ucfs_export_server_secrets_manager.arn
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = aws_iam_policy.stub_ucfs_export_server_secrets_manager[0].arn
 }
 
 data "aws_iam_policy_document" "stub_ucfs_export_server" {
@@ -241,6 +242,7 @@ data "aws_iam_policy_document" "stub_ucfs_export_server" {
 }
 
 data "aws_iam_policy_document" "stub_ucfs_export_server_secrets_manager" {
+  count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   statement {
     effect = "Allow"
 
@@ -262,9 +264,10 @@ resource "aws_iam_policy" "stub_ucfs_export_server" {
 }
 
 resource "aws_iam_policy" "stub_ucfs_export_server_secrets_manager" {
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "MiniIOSecretsManager"
   description = "Allow reading of MinIO Access and Secret Keys"
-  policy      = data.aws_iam_policy_document.stub_ucfs_export_server_secrets_manager.json
+  policy      = data.aws_iam_policy_document.stub_ucfs_export_server_secrets_manager[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server" {
