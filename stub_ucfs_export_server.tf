@@ -265,7 +265,7 @@ resource "aws_iam_policy" "stub_ucfs_export_server" {
 
 resource "aws_iam_policy" "stub_ucfs_export_server_secrets_manager" {
   count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
-  name        = "MiniIOSecretsManager"
+  name        = "MiniIOSecretsManagerStubRead"
   description = "Allow reading of MinIO Access and Secret Keys"
   policy      = data.aws_iam_policy_document.stub_ucfs_export_server_secrets_manager[0].json
 }
