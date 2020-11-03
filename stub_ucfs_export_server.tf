@@ -173,6 +173,11 @@ resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_ebs_cmk_insta
   policy_arn = "arn:aws:iam::${local.account[local.environment]}:policy/EBSCMKInstanceEncryptDecrypt"
 }
 
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server_secrets_manager" {
+  role       = aws_iam_role.stub_ucfs_export_server.name
+  policy_arn = aws_iam_policy.stub_ucfs_export_server_secrets_manager.arn
+}
+
 data "aws_iam_policy_document" "stub_ucfs_export_server" {
   count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   statement {
@@ -235,11 +240,31 @@ data "aws_iam_policy_document" "stub_ucfs_export_server" {
   }
 }
 
+data "aws_iam_policy_document" "stub_ucfs_export_server_secrets_manager" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "secretsmanager:GetSecretValue",
+    ]
+
+    resources = [
+      data.terraform_remote_state.tarball_ingester.outputs.minio_credentials.arn
+    ]
+  }
+}
+
 resource "aws_iam_policy" "stub_ucfs_export_server" {
   count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "StubUCFSExportServer"
   description = "Custom policy for Stub UCFS Export Server"
   policy      = data.aws_iam_policy_document.stub_ucfs_export_server[0].json
+}
+
+resource "aws_iam_policy" "stub_ucfs_export_server_secrets_manager" {
+  name        = "MiniIOSecretsManager"
+  description = "Allow reading of MinIO Access and Secret Keys"
+  policy      = data.aws_iam_policy_document.stub_ucfs_export_server_secrets_manager.json
 }
 
 resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server" {
