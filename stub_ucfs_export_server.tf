@@ -11,6 +11,15 @@ resource "aws_vpc_endpoint_subnet_association" "tarball_ingester" {
   subnet_id       = element(data.terraform_remote_state.ingest.outputs.stub_ucfs_subnets.id, count.index)
 }
 
+resource "aws_route53_record" "tarball_ingester" {
+  provider = aws.management_dns
+  zone_id  = data.terraform_remote_state.management_dns.outputs.dataworks_zone.id
+  name     = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
+  type     = "CNAME"
+  ttl      = "60"
+  records  = [aws_vpc_endpoint.tarball_ingester.dns_entry[0].dns_name]
+}
+
 resource "aws_launch_template" "stub_ucfs_export_server" {
   count         = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name_prefix   = "stub_ucfs_export_server_"
@@ -258,6 +267,17 @@ resource "aws_security_group_rule" "stub_ucfs_export_server_s3" {
   protocol          = "tcp"
   from_port         = 443
   to_port           = 443
+  security_group_id = aws_security_group.stub_ucfs_export_server[0].id
+}
+
+resource "aws_security_group_rule" "stub_ucfs_export_server_s3_yum" {
+  count             = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  description       = "Allow stub UCFS export server to reach S3 for YUM"
+  type              = "egress"
+  prefix_list_ids   = [data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.prefix_list_ids.s3]
+  protocol          = "tcp"
+  from_port         = 80
+  to_port           = 80
   security_group_id = aws_security_group.stub_ucfs_export_server[0].id
 }
 
