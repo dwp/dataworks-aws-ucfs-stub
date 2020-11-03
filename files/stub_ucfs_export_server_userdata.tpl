@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Force LC update when any of these files are changed
-echo "${s3_file_stub_ucfs_export_server_logrotate}" > /dev/null
-echo "${s3_file_stub_ucfs_export_server_cloudwatch_sh}" > /dev/null
-echo "${s3_file_stub_ucfs_export_server_post_tarballs_sh}" > /dev/null
+echo "${s3_file_stub_ucfs_export_server_logrotate_md5}" > /dev/null
+echo "${s3_file_stub_ucfs_export_server_cloudwatch_sh_md5}" > /dev/null
+echo "${s3_file_stub_ucfs_export_server_post_tarballs_sh_md5}" > /dev/null
 
 export AWS_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d'"' -f4)
 
