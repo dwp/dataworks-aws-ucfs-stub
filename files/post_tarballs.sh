@@ -3,7 +3,7 @@
 echo "Retrieving Synthetic Tarballs..."
 aws s3 sync s3://${s3_input_bucket}/${s3_input_prefix} /srv/data/export
 
-export AWS_DEFAULT_REGION=eu-west-2
+export AWS_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d'"' -f4)
 aws configure set default.s3.signature_version s3v4
 
 echo "Obtaining MinIO Credentials..."
