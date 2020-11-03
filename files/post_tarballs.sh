@@ -9,8 +9,8 @@ aws configure set default.s3.signature_version s3v4
 echo "Obtaining MinIO Credentials..."
 export MINIO_ACCESS_KEY_ID=$(aws secretsmanager get-secret-value --secret-id minio --query SecretString --output text | jq -r .MINIO_ACCESS_KEY)
 export MINIO_SECRET_ACCESS_KEY=$(aws secretsmanager get-secret-value --secret-id minio --query SecretString --output text | jq -r .MINIO_SECRET_KEY)
-export AWS_ACCESS_KEY_ID=${MINIO_ACCESS_KEY_ID}
-export AWS_SECRET_ACCESS_KEY=${MINIO_SECRET_ACCESS_KEY}
+export AWS_ACCESS_KEY_ID=$MINIO_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$MINIO_SECRET_ACCESS_KEY
 
 echo "Sending tarballs to ingestion server..."
 today=$(date "+%Y-%m-%d")
