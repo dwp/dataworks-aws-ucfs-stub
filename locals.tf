@@ -9,11 +9,11 @@ locals {
   }
 
   stub_ucfs_export_server_ssmenabled = {
-    development = true
-    qa          = true
-    integration = true
-    preprod     = false
-    production  = false
+    development = "True"
+    qa          = "True"
+    integration = "True"
+    preprod     = "False"
+    production  = "False"
   }
 
   env_prefix = {
