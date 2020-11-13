@@ -380,7 +380,7 @@ data "local_file" "stub_ucfs_export_server_logrotate_script" {
 resource "aws_s3_bucket_object" "stub_ucfs_export_server_logrotate_script" {
   count   = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
-  key     = "component/ucfs-server-stub/ucfs-server-stub.logrotate"
+  key     = "component/stub-ucfs-export-server/ucfs-server-stub.logrotate"
   content = data.local_file.stub_ucfs_export_server_logrotate_script.content
 
   tags = merge(
