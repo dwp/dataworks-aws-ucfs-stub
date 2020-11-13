@@ -18,8 +18,8 @@ variable "stub_ucfs_export_server_ec2_instance_type" {
   default = {
     development = "t3.large"
     qa          = "t3.large"
-    integration = "c5.large"
-    preprod     = "c5.large"
+    integration = "t3.large"
+    preprod     = "t3.large"
     production  = "c5.large"
   }
 }
