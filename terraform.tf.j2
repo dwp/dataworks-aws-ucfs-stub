@@ -37,6 +37,19 @@ locals {
   name        = "dataworks-aws-ucfs-stub"
   environment = terraform.workspace == "default" ? "development" : terraform.workspace
 
+  management_workspace = {
+      management-dev = "default"
+      management     = "management"
+  }
+
+  management_account = {
+      development = "management-dev"
+      qa          = "management-dev"
+      integration = "management-dev"
+      preprod     = "management"
+      production  = "management"
+  }
+
   account = {
     {%- for key, value in accounts.items() %}
       {{key}} = "{{value}}"
