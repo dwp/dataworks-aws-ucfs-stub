@@ -62,7 +62,7 @@ locals {
     qa          = "dataworks_root_ca,dataworks_mgt_root_ca"
     integration = "dataworks_root_ca,dataworks_mgt_root_ca,ucfs_ca"
     preprod     = "dataworks_root_ca,dataworks_mgt_root_ca,ucfs_ca"
-    production  = "dataworks_root_ca,dataworks_mgt_root_ca,ucfs_ca,ucfs_ca_old"
+    production  = "dataworks_root_ca,dataworks_mgt_root_ca,ucfs_ca"
   }
 
   stub_ucfs_export_server_truststore_certs = {
