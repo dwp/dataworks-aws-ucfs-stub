@@ -26,11 +26,11 @@ variable "stub_ucfs_export_server_ec2_instance_type" {
 
 variable "stub_ucfs_export_server_ebs_volume_size" {
   default = {
-    development = "10"
-    qa          = "10"
-    integration = "500"
-    preprod     = "500"
-    production  = "500"
+    development = "5000"
+    qa          = "5000"
+    integration = "5000"
+    preprod     = "5000"
+    production  = "5000"
   }
 }
 
