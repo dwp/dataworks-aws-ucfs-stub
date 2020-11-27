@@ -68,6 +68,10 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
     }
   }
 
+  monitoring {
+    enabled = true
+  }
+
   lifecycle {
     create_before_destroy = true
   }
