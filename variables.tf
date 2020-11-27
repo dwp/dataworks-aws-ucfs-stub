@@ -16,10 +16,10 @@ variable "region" {
 
 variable "stub_ucfs_export_server_ec2_instance_type" {
   default = {
-    development = "t3.large"
-    qa          = "t3.large"
-    integration = "t3.large"
-    preprod     = "t3.large"
+    development = "c5.large"
+    qa          = "c5.large"
+    integration = "c5.large"
+    preprod     = "c5.large"
     production  = "c5.large"
   }
 }
