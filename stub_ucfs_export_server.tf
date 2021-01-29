@@ -263,6 +263,34 @@ resource "aws_iam_role_policy_attachment" "stub_ucfs_export_server" {
   policy_arn = aws_iam_policy.stub_ucfs_export_server[0].arn
 }
 
+data "aws_iam_policy_document" "stub_ucfs_export_ec2" {
+  count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+
+  statement {
+    sid    = "EnableEC2PermissionsHost"
+    effect = "Allow"
+
+    actions = [
+      "ec2:ModifyInstanceMetadataOptions",
+      "ec2:*Tags",
+    ]
+    resources = ["arn:aws:ec2:${var.region}:${local.account[local.environment]}:instance/*"]
+  }
+}
+
+resource "aws_iam_policy" "stub_ucfs_export_ec2" {
+  count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  name        = "StubUCFSExportServerEC2Tagging"
+  description = "Policy to allow access to modify EC2 Tags"
+  policy      = data.aws_iam_policy_document.stub_ucfs_export_ec2[count.index].json
+}
+
+resource "aws_iam_role_policy_attachment" "stub_ucfs_export_ec2" {
+  count      = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
+  role       = aws_iam_role.stub_ucfs_export_server[0].name
+  policy_arn = aws_iam_policy.stub_ucfs_export_ec2[count.index].arn
+}
+
 resource "aws_security_group" "stub_ucfs_export_server" {
   count       = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name        = "stub_ucfs_export_server"
