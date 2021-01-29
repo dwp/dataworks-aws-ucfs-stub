@@ -50,6 +50,7 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
     s3_file_stub_ucfs_export_server_cloudwatch_sh_md5    = md5(data.local_file.stub_ucfs_export_server_cloudwatch_script.content)
     s3_file_stub_ucfs_export_server_post_tarballs_sh     = aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].id
     s3_file_stub_ucfs_export_server_post_tarballs_sh_md5 = md5(aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].content)
+    name                                                 = local.stub_ucfs_export_server_name
   }))
   instance_initiated_shutdown_behavior = "terminate"
 

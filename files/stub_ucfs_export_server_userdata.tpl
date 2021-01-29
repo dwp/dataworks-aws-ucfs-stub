@@ -67,6 +67,13 @@ acm-cert-retriever \
 --truststore-aliases "${truststore_aliases}" \
 --truststore-certs "${truststore_certs}" >> /var/log/acm-cert-retriever.log 2>&1
 
+# rename ec2 instance to be unique
+export INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+UUID=$(dbus-uuidgen | cut -c 1-8)
+export HOSTNAME=${name}-$UUID
+hostnamectl set-hostname $HOSTNAME
+aws ec2 create-tags --resources $INSTANCE_ID --tags Key=Name,Value=$HOSTNAME 
+
 unset HTTPS_PROXY HTTP_PROXY NO_PROXY
 echo "Changing permissions"
 chown dip_export:dip_export -R  /opt/stub_ucfs_export_server /var/log/stub_ucfs_export_server /srv/data/export
@@ -76,3 +83,5 @@ echo "Running script to post synthetic tarballs to endpoint"
 chmod u+x /opt/stub_ucfs_export_server/post_tarballs.sh
 su -s /bin/bash -c '/opt/stub_ucfs_export_server/post_tarballs.sh >> /var/log/stub_ucfs_export_server/stub_ucfs_export_server.out 2>&1' dip_export
 fi
+
+
