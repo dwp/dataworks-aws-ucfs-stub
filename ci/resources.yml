@@ -27,3 +27,4 @@ resources:
         is-public: false
         state: available
         name: dw-al2-hardened-ami-*
+        architecture: x86_64
