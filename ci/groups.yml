@@ -23,3 +23,6 @@ groups:
       - scale-down-integration
       - scale-down-preprod
       - scale-down-production
+  - name: update-pipeline
+    jobs:
+      - update-pipeline
