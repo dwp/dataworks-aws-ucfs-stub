@@ -28,3 +28,15 @@ resources:
         state: available
         name: dw-al2-hardened-ami-*
         architecture: x86_64
+
+  - name: dataworks-aws-ucfs-stub-update-pipeline
+    type: git
+    source:
+      branch: master
+      uri: https://github.com/dwp/dataworks-aws-ucfs-stub.git
+      paths:
+        - ci/*
+        - aviator.yml
+    webhook_token: ((dataworks.concourse_github_webhook_token))
+    check_every: 720h 
+    
