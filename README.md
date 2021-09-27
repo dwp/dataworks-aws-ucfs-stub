@@ -1,22 +1,13 @@
 # dataworks-aws-ucfs-stub
 
-## A repo for DataWorks AWS UCFS stub infrastructure
+## Stub for testing tarball ingestor
 
-This repo contains Makefile and base terraform folders and jinja2 files to fit the standard pattern.
-This repo is a base to create new Terraform repos, renaming the template files and adding the githooks submodule, making the repo ready for use.
+The repository contains deployment files for components that enable the testing of the tarball ingestor in lower environments.
 
-Running aviator will create the pipeline required on the AWS-Concourse instance, in order pass a mandatory CI ran status check.  this will likely require you to login to Concourse, if you haven't already.
+The tarball ingestor requires a UCFS server where files will be dropped to be ingested. As we are not connected in DataWorks to UCFS lower environments, we need a stub to connect to.
 
-After cloning this repo, please generate `terraform.tf` and `terraform.tfvars` files:  
-`make bootstrap`
+This then enables manual runs of the tarball ingestor in those environments and gives us somewhere to drop files in to.
 
-In addition, you may want to do the following: 
+### Initial check-out
 
-1. Create non-default Terraform workspaces as and if required:  
-    `make terraform-workspace-new workspace=<workspace_name>` e.g.  
-    ```make terraform-workspace-new workspace=qa```
-
-1. Configure Concourse CI pipeline:
-    1. Add/remove jobs in `./ci/jobs` as required 
-    1. Create CI pipeline:  
-`aviator`
+When checking out this repo, ensure you run `make bootstrap`.
