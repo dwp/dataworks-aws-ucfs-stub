@@ -44,12 +44,12 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
     cwa_netstat_metrics_collection_interval              = local.cw_agent_netstat_metrics_collection_interval
     cwa_log_group_name                                   = aws_cloudwatch_log_group.stub_ucfs_export_server_logs[0].name
     s3_scripts_bucket                                    = data.terraform_remote_state.common.outputs.config_bucket.id
-    s3_file_stub_ucfs_export_server_logrotate            = aws_s3_bucket_object.stub_ucfs_export_server_logrotate_script[0].id
+    s3_file_stub_ucfs_export_server_logrotate            = aws_s3_object.stub_ucfs_export_server_logrotate_script[0].id
     s3_file_stub_ucfs_export_server_logrotate_md5        = md5(data.local_file.stub_ucfs_export_server_logrotate_script.content)
-    s3_file_stub_ucfs_export_server_cloudwatch_sh        = aws_s3_bucket_object.stub_ucfs_export_server_cloudwatch_script[0].id
+    s3_file_stub_ucfs_export_server_cloudwatch_sh        = aws_s3_object.stub_ucfs_export_server_cloudwatch_script[0].id
     s3_file_stub_ucfs_export_server_cloudwatch_sh_md5    = md5(data.local_file.stub_ucfs_export_server_cloudwatch_script.content)
-    s3_file_stub_ucfs_export_server_post_tarballs_sh     = aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].id
-    s3_file_stub_ucfs_export_server_post_tarballs_sh_md5 = md5(aws_s3_bucket_object.stub_ucfs_export_server_post_tarballs_script[0].content)
+    s3_file_stub_ucfs_export_server_post_tarballs_sh     = aws_s3_object.stub_ucfs_export_server_post_tarballs_script[0].id
+    s3_file_stub_ucfs_export_server_post_tarballs_sh_md5 = md5(aws_s3_object.stub_ucfs_export_server_post_tarballs_script[0].content)
     name                                                 = local.stub_ucfs_export_server_name
   }))
   instance_initiated_shutdown_behavior = "terminate"
@@ -414,7 +414,7 @@ data "local_file" "stub_ucfs_export_server_logrotate_script" {
   filename = "files/stub_ucfs_export_server.logrotate"
 }
 
-resource "aws_s3_bucket_object" "stub_ucfs_export_server_logrotate_script" {
+resource "aws_s3_object" "stub_ucfs_export_server_logrotate_script" {
   count   = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
   key     = "component/stub-ucfs-export-server/ucfs-server-stub.logrotate"
@@ -432,7 +432,7 @@ data "local_file" "stub_ucfs_export_server_cloudwatch_script" {
   filename = "files/stub_ucfs_export_server_cloudwatch.sh"
 }
 
-resource "aws_s3_bucket_object" "stub_ucfs_export_server_cloudwatch_script" {
+resource "aws_s3_object" "stub_ucfs_export_server_cloudwatch_script" {
   count   = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
   key     = "component/stub-ucfs-export-server/stub-ucfs-export-server-cloudwatch.sh"
@@ -446,7 +446,7 @@ resource "aws_s3_bucket_object" "stub_ucfs_export_server_cloudwatch_script" {
   )
 }
 
-resource "aws_s3_bucket_object" "stub_ucfs_export_server_post_tarballs_script" {
+resource "aws_s3_object" "stub_ucfs_export_server_post_tarballs_script" {
   count  = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   bucket = data.terraform_remote_state.common.outputs.config_bucket.id
   key    = "component/stub-ucfs-export-server/post_tarballs.sh"
