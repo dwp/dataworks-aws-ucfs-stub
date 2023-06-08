@@ -56,7 +56,7 @@ meta:
               terraform apply -auto-approve terraform.plan
           dir: dataworks-aws-ucfs-stub
         inputs:
-          - name: dataworks-aws-ucfs-stub
+          - name: dataworks-aws-ucfs-stub-dev
           - name: terraform-bootstrap
           - name: dw-al2-hardened-ami
             
@@ -76,7 +76,7 @@ meta:
               terraform plan $DETAILED_EXITCODE
           dir: dataworks-aws-ucfs-stub
         inputs:
-          - name: dataworks-aws-ucfs-stub
+          - name: dataworks-aws-ucfs-stub-dev
           - name: terraform-bootstrap
           - name: dw-al2-hardened-ami
       params:
@@ -97,7 +97,7 @@ meta:
               terraform workspace show
               terraform output export_server_asg | grep "\"name\" = " | awk '{print $3}' | sed 's/"//g' > ../export-server-asg/name
         inputs:
-          - name: dataworks-aws-ucfs-stub
+          - name: dataworks-aws-ucfs-stub-dev
           - name: terraform-bootstrap
         outputs:
           - name: export-server-asg
