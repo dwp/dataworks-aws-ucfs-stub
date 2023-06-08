@@ -208,6 +208,17 @@ data "aws_iam_policy_document" "minio_credentials_secretsmanager" {
   }
 }
 
+resource "aws_secretsmanager_secret" "minio_credentials" {
+  name            = "minio"
+  description     = "MinIO credentials"
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "minio",
+    },
+  )
+}
+
 data "aws_iam_policy_document" "stub_ucfs_export_server" {
   count = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   statement {
