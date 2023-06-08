@@ -14,7 +14,8 @@ resource "aws_vpc_endpoint_subnet_association" "tarball_ingester" {
 resource "aws_route53_record" "tarball_ingester" {
   provider = aws.management_dns
   zone_id  = data.terraform_remote_state.management_dns.outputs.dataworks_zone.id
-  name     = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
+  name     = aws_acm_certificate.tarball_ingester_replacement.domain_name
+  # name     = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
   type     = "CNAME"
   ttl      = "60"
   records  = [aws_vpc_endpoint.tarball_ingester.dns_entry[0].dns_name]
@@ -279,6 +280,194 @@ data "aws_iam_policy_document" "stub_ucfs_export_server" {
       aws_cloudwatch_log_group.stub_ucfs_export_server_logs[0].arn
     ]
   }
+}
+
+resource "aws_acm_certificate" "tarball_ingester_replacement" {
+  certificate_authority_arn   = data.terraform_remote_state.certificate_authority.outputs.root_ca.arn
+  domain_name                 = "${local.tarball_ingester_replacement_name}.${local.env_prefix[local.environment]}dataworks.dwp.gov.uk"
+}
+
+data "aws_iam_policy_document" "tarball_ingester" {
+  statement {
+    sid    = "AllowACM"
+    effect = "Allow"
+
+    actions = [
+      "acm:*Certificate",
+    ]
+
+    resources = [aws_acm_certificate.aws_lb.tarball_ingester_replacement.arn]
+  }
+
+  statement {
+    sid    = "GetPublicCerts"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.arn]
+  }
+
+  statement {
+    sid    = "AllowUseDefaultEbsCmk"
+    effect = "Allow"
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey",
+    ]
+
+
+    resources = [data.terraform_remote_state.security-tools.outputs.ebs_cmk.arn]
+  }
+
+  statement {
+    effect = "Allow"
+    sid    = "AllowAccessToConfigBucket"
+
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
+
+
+    resources = [data.terraform_remote_state.common.outputs.config_bucket.arn]
+  }
+
+  statement {
+    effect = "Allow"
+    sid    = "AllowAccessToConfigBucketObjects"
+
+    actions = ["s3:GetObject"]
+
+    resources = ["${data.terraform_remote_state.common.outputs.config_bucket.arn}/*"]
+  }
+
+  statement {
+    sid    = "AllowKMSDecryptionOfS3ConfigBucketObj"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+    ]
+
+    resources = [data.terraform_remote_state.common.outputs.config_bucket_cmk.arn]
+  }
+
+  statement {
+    sid       = "AllowDescribeASGToCheckLaunchTemplate"
+    effect    = "Allow"
+    actions   = ["autoscaling:DescribeAutoScalingGroups"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "AllowDescribeEC2LaunchTemplatesToCheckLatestVersion"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeLaunchTemplates"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "TarballingesterKMS"
+    effect = "Allow"
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey",
+    ]
+
+    resources = [
+      data.terraform_remote_state.ingest.outputs.input_bucket_cmk.arn
+    ]
+  }
+
+  statement {
+    sid     = "AllowAccessToArtefactBucket"
+    effect  = "Allow"
+    actions = ["s3:GetBucketLocation"]
+
+    resources = [data.terraform_remote_state.management_artefact.outputs.artefact_bucket.arn]
+  }
+
+  statement {
+    sid = "AllowPutToHTMEBucket"
+    actions = [
+      "s3:DeleteObject*",
+      "s3:PutObject"
+    ]
+    resources = ["${data.terraform_remote_state.internal_compute.outputs.htme_s3_bucket.arn}/*"]
+  }
+
+  statement {
+    sid = "AllowListHTMEBucket"
+    actions = [
+      "s3:ListBucket"
+    ]
+    resources = [data.terraform_remote_state.internal_compute.outputs.htme_s3_bucket.arn]
+  }
+
+  statement {
+    sid = "AllowKMSEncryptionOfHTMEBucketObject"
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+      "kms:Encrypt",
+      "kms:GenerateDataKey*",
+      "kms:ReEncrypt*"
+    ]
+    resources = [data.terraform_remote_state.internal_compute.outputs.compaction_bucket_cmk.arn]
+  }
+
+  statement {
+    sid       = "AllowPullFromArtefactBucket"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${data.terraform_remote_state.management_artefact.outputs.artefact_bucket.arn}/*"]
+  }
+
+  statement {
+    sid    = "AllowDecryptArtefactBucket"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+    ]
+
+    resources = [data.terraform_remote_state.management_artefact.outputs.artefact_bucket.cmk_arn]
+  }
+
+  statement {
+    sid    = "AllowTarballingesterToAccessLogGroups"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogStreams"
+    ]
+    resources = [aws_cloudwatch_log_group.tarball_ingester_logs.arn]
+  }
+}
+
+resource "aws_cloudwatch_log_group" "tarball_ingester_replacement_logs" {
+  name              = "/app/${local.tarball_ingester_replacement_name}"
+  retention_in_days = 180
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "/app/${local.tarball_ingester_replacement_name}"
+    },
+  )
 }
 
 resource "aws_iam_policy" "stub_ucfs_export_server" {
