@@ -8,7 +8,11 @@ jobs:
       - get: dw-al2-hardened-ami
         trigger: true
       - .: (( inject meta.plan.terraform-bootstrap ))
+        input_mapping:
+          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev      
       - .: (( inject meta.plan.terraform-apply ))
+        input_mapping:
+          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev      
       - .: (( inject meta.plan.terraform-plan ))
         input_mapping:
           dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev

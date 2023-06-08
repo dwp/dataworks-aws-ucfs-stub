@@ -34,8 +34,6 @@ meta:
           dir: dataworks-aws-ucfs-stub
         inputs:
           - name: dataworks-aws-ucfs-stub
-            input_mapping:
-              dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev
         outputs:
           - name: terraform-bootstrap
       params:
