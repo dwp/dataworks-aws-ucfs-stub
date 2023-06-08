@@ -8,6 +8,14 @@ locals {
     production  = false
   }
 
+  tarball_ingester_uc_replacement_connected = {
+    development = false
+    qa          = false
+    integration = true
+    preprod     = true
+    production  = true
+  }
+
   stub_ucfs_export_server_ssmenabled = {
     development = "True"
     qa          = "True"
