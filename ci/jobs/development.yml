@@ -2,7 +2,7 @@ jobs:
   - name: development
     max_in_flight: 1
     plan:
-      # - get: dataworks-aws-ucfs-stub
+      - get: dataworks-aws-ucfs-stub
       - get: dataworks-aws-ucfs-stub-dev
         trigger: true
       - get: dw-al2-hardened-ami
