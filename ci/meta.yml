@@ -33,7 +33,7 @@ meta:
               cp terraform.tf ../terraform-bootstrap
           dir: dataworks-aws-ucfs-stub
         inputs:
-          - name: dataworks-aws-ucfs-stub
+          - name: dataworks-aws-ucfs-stub-dev
         outputs:
           - name: terraform-bootstrap
       params:
