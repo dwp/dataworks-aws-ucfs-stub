@@ -30,7 +30,7 @@ resource "aws_lb_target_group" "tarball_ingester-replacement" {
 }
 
 resource "aws_lb_listener" "tarball_ingester_listener_replacement" {
-  load_balancer_arn = aws_lb.tarball_ingester.arn
+  load_balancer_arn = aws_lb.tarball_ingester_replacement.arn
   port              = 443
   protocol          = "TCP"
 
