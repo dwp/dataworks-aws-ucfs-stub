@@ -1,6 +1,6 @@
 resource "aws_vpc_endpoint" "tarball_ingester" {
   vpc_id             = data.terraform_remote_state.ingest.outputs.stub_ucfs_vpc.vpc.id
-  service_name       = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_endpoint.service_name
+  service_name       = aws_vpc_endpoint_service.tarball_ingester_replacement.service_name
   security_group_ids = [data.terraform_remote_state.ingest.outputs.stub_ucfs_interface_vpce_sg.id]
   vpc_endpoint_type  = "Interface"
 }
