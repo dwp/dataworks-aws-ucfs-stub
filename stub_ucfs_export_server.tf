@@ -15,7 +15,6 @@ resource "aws_route53_record" "tarball_ingester" {
   provider = aws.management_dns
   zone_id  = data.terraform_remote_state.management_dns.outputs.dataworks_zone.id
   name     = aws_acm_certificate.tarball_ingester_replacement.domain_name
-  # name     = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
   type     = "CNAME"
   ttl      = "60"
   records  = [aws_vpc_endpoint.tarball_ingester.dns_entry[0].dns_name]
