@@ -59,7 +59,28 @@ meta:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
           - name: dw-al2-hardened-ami
-            
+
+    terraform-destroy:
+      task: terraform-destroy
+      .: (( inject meta.plan.terraform-common-config ))
+      config:
+        run:
+          path: sh
+          args:
+            - -exc
+            - |
+              export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
+              cp ../terraform-bootstrap/terraform.tf .
+              terraform workspace show
+              terraform init
+              terraform plan -destroy -out terraform.plan
+              terraform apply -auto-approve terraform.plan
+          dir: dataworks-aws-ucfs-stub
+        inputs:
+          - name: dataworks-aws-ucfs-stub
+          - name: terraform-bootstrap
+          - name: dw-al2-hardened-ami
+
     terraform-plan:
       task: terraform-plan
       .: (( inject meta.plan.terraform-common-config ))

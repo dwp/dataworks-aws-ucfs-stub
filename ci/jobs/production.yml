@@ -11,9 +11,6 @@ jobs:
         passed:
           - preprod
       - .: (( inject meta.plan.terraform-bootstrap ))
-      - .: (( inject meta.plan.terraform-apply ))
-        params:
-          TF_WORKSPACE: 'production'
-      - .: (( inject meta.plan.terraform-plan ))
+      - .: (( inject meta.plan.terraform-destroy ))
         params:
           TF_WORKSPACE: 'production'
