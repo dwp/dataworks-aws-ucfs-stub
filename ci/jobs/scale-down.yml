@@ -4,6 +4,8 @@ jobs:
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: false
+      - get: every-4h
+        trigger: true
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-output ))
       - .: (( inject meta.plan.scale-down ))
@@ -16,6 +18,8 @@ jobs:
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: false
+      - get: every-4h
+        trigger: true
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-output ))
         config:
@@ -31,6 +35,8 @@ jobs:
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: false
+      - get: every-4h
+        trigger: true
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-output ))
         config:
@@ -46,6 +52,8 @@ jobs:
     plan:
       - get: dataworks-aws-ucfs-stub
         trigger: false
+      - get: every-4h
+        trigger: true
       - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-output ))
         config:
