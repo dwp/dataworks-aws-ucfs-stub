@@ -3,16 +3,9 @@ jobs:
     max_in_flight: 1
     plan:
       - get: dataworks-aws-ucfs-stub
-      - get: dataworks-aws-ucfs-stub-dev
         trigger: true
       - get: dw-al2-hardened-ami
         trigger: true
-      - .: (( inject meta.plan.terraform-bootstrap ))
-        input_mapping:
-          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev      
-      - .: (( inject meta.plan.terraform-apply ))
-        input_mapping:
-          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev      
+      - .: (( inject meta.plan.terraform-bootstrap ))     
+      - .: (( inject meta.plan.terraform-apply ))     
       - .: (( inject meta.plan.terraform-plan ))
-        input_mapping:
-          dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev
