@@ -673,7 +673,8 @@ resource "aws_s3_object" "stub_ucfs_export_server_post_tarballs_script" {
   content = templatefile("files/post_tarballs.sh", {
     s3_input_bucket              = data.terraform_remote_state.ingest.outputs.s3_buckets.input_bucket
     s3_input_prefix              = "business-data/tarballs-mongo/ucdata/"
-    tarball_ingester_s3_endpoint = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
+    tarball_ingester_s3_endpoint = aws_route53_record.tarball_ingester.name
+  #  tarball_ingester_s3_endpoint = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_fqdn
     tarball_ingester_s3_bucket   = data.terraform_remote_state.tarball_ingester.outputs.tarball_ingester_minio_s3_bucket_name
   })
 
