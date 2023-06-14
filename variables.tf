@@ -48,3 +48,8 @@ variable "al2_hardened_ami_id" {
   description = "The AMI ID of the latest/pinned Hardened AMI AL2 Image"
   type        = string
 }
+
+variable "minio_s3_bucket_name" {
+  description = "The name of the S3 bucket created by MinIO"
+  default     = "ucfs-business-data-tarballs"
+}

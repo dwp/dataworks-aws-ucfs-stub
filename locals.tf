@@ -8,6 +8,14 @@ locals {
     production  = false
   }
 
+  tarball_ingester_uc_replacement_connected = {
+    development = false
+    qa          = false
+    integration = true
+    preprod     = true
+    production  = true
+  }
+
   stub_ucfs_export_server_ssmenabled = {
     development = "True"
     qa          = "True"
@@ -73,9 +81,10 @@ locals {
     preprod     = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/dataworks/dataworks_root_ca.pem"
     production  = "s3://${data.terraform_remote_state.certificate_authority.outputs.public_cert_bucket.id}/ca_certificates/ucfs/root_ca.pem"
   }
-
-  stub_ucfs_export_server_name               = "stub-ucfs-export-server"
-  cw_stub_ucfs_export_server_agent_namespace = "/app/${local.stub_ucfs_export_server_name}"
+  
+  tarball_ingester_replacement_name                = "tarball-ingester-replacement"
+  stub_ucfs_export_server_name                     = "stub-ucfs-export-server"
+  cw_stub_ucfs_export_server_agent_namespace       = "/app/${local.stub_ucfs_export_server_name}"
 
   cw_agent_metrics_collection_interval                  = 60
   cw_agent_cpu_metrics_collection_interval              = 60
