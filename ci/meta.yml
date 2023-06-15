@@ -48,7 +48,7 @@ meta:
           args:
             - -exc
             - |
-              export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
+              export TF_VAR_al2_jvm_ami_id=$(cat ../dw-al2-jvm-ami/id)
               cp ../terraform-bootstrap/terraform.tf .
               terraform workspace show
               terraform init
@@ -58,8 +58,8 @@ meta:
         inputs:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
-          - name: dw-al2-hardened-ami
-            
+          - name: dw-al2-jvm-ami
+
     terraform-plan:
       task: terraform-plan
       .: (( inject meta.plan.terraform-common-config ))
@@ -69,7 +69,7 @@ meta:
           args:
             - -exc
             - |
-              export TF_VAR_al2_hardened_ami_id=$(cat ../dw-al2-hardened-ami/id)
+              export TF_VAR_al2_jvm_ami_id=$(cat ../dw-al2-jvm-ami/id)
               cp ../terraform-bootstrap/terraform.tf .
               terraform workspace show
               terraform init
@@ -78,7 +78,7 @@ meta:
         inputs:
           - name: dataworks-aws-ucfs-stub
           - name: terraform-bootstrap
-          - name: dw-al2-hardened-ami
+          - name: dw-al2-jvm-ami
       params:
         DETAILED_EXITCODE: -detailed-exitcode
 
