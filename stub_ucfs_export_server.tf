@@ -209,12 +209,12 @@ data "aws_iam_policy_document" "minio_credentials_secretsmanager" {
 }
 
 resource "aws_secretsmanager_secret" "minio_credentials" {
-  name            = "minio-ucfs-stub"
+  name            = "minio"
   description     = "MinIO credentials UCFS-STUB"
   tags = merge(
     local.common_tags,
     {
-      Name = "minio-ucfs-stub",
+      Name = "minio",
     },
   )
 }
