@@ -8,7 +8,7 @@ jobs:
         params:
           path: dataworks-aws-ucfs-stub-pr
           status: pending
-      - get: dw-al2-hardened-ami
+      - get: dw-al2-jvm-ami
         trigger: false
       - .: (( inject meta.plan.terraform-bootstrap ))
         input_mapping:

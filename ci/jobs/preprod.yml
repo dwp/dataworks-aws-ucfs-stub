@@ -6,7 +6,7 @@ jobs:
         trigger: true
         passed:
           - integration
-      - get: dw-al2-hardened-ami
+      - get: dw-al2-jvm-ami
         trigger: false
         passed:
           - integration
