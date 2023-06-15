@@ -14,9 +14,9 @@ resources:
       uri: https://github.com/dwp/dataworks-aws-ucfs-stub.git
       access_token: ((dataworks-secrets.concourse_github_pat))
     webhook_token: ((dataworks.concourse_github_webhook_token))
-    check_every: 720h   
+    check_every: 720h
 
-  - name: dw-al2-hardened-ami
+  - name: dw-al2-jvm-ami
     type: ami
     check_every: 1h
     source:
@@ -26,7 +26,7 @@ resources:
         owner-id: "((dataworks.aws_management_acc))"
         is-public: false
         state: available
-        name: dw-al2-hardened-ami-*
+        name: dw-al2-jvm-ami-*
         architecture: x86_64
 
   - name: dataworks-aws-ucfs-stub-update-pipeline

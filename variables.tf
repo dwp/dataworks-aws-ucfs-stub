@@ -44,7 +44,7 @@ variable "stub_ucfs_export_server_ebs_volume_type" {
   }
 }
 
-variable "al2_hardened_ami_id" {
+variable "al2_jvm_ami_id" {
   description = "The AMI ID of the latest/pinned Hardened AMI AL2 Image"
   type        = string
 }
