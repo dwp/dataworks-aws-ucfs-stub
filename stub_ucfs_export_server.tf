@@ -23,7 +23,7 @@ resource "aws_route53_record" "tarball_ingester" {
 resource "aws_launch_template" "stub_ucfs_export_server" {
   count         = local.deploy_stub_ucfs_export_server[local.environment] ? 1 : 0
   name_prefix   = "stub_ucfs_export_server_"
-  image_id      = var.al2_hardened_ami_id
+  image_id      = var.al2_jvm_ami_id
   instance_type = var.stub_ucfs_export_server_ec2_instance_type[local.environment]
   vpc_security_group_ids = [
   aws_security_group.stub_ucfs_export_server[0].id]
