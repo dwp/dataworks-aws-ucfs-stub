@@ -59,7 +59,7 @@ resource "aws_launch_template" "stub_ucfs_export_server" {
   }
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = "/dev/sda1"
 
     ebs {
       volume_size           = var.stub_ucfs_export_server_ebs_volume_size[local.environment]
