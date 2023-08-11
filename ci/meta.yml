@@ -183,4 +183,6 @@ meta:
             - -exc
             - |
               docker build -t python38-custom .
-              
+
+        inputs: 
+          - name: dataworks-aws-ucfs-stub
