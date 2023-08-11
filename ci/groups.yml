@@ -26,3 +26,7 @@ groups:
   - name: update-pipeline
     jobs:
       - update-pipeline
+    
+  - name: python3-8-dev
+    jobs:
+      - python3-8-dev
