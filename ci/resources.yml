@@ -16,6 +16,21 @@ resources:
     webhook_token: ((dataworks.concourse_github_webhook_token))
     check_every: 720h   
 
+  - name: dataworks-aws-ucfs-stub-dev
+    type: git
+    source:
+      branch: DTWRKS-1536
+      uri: https://github.com/dwp/dataworks-aws-ucfs-stub.git
+      access_token: ((dataworks-secrets.concourse_github_pat))
+    webhook_token: ((dataworks.concourse_github_webhook_token))
+    check_every: 720h   
+
+  - name: python38-docker-image
+    type: docker-image
+    source:
+      repository: python
+      tag: 3.8 
+  
   - name: dw-al2-hardened-ami
     type: ami
     check_every: 1h

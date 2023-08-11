@@ -165,3 +165,22 @@ meta:
               else
                 echo "Scaling failed."
               fi
+
+    build-python3-8:
+      task: build-python3-8
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((dataworks.docker_awscli_repository))
+            version: ((dataworks.docker_awscli_version))
+            tag: ((dataworks.docker_awscli_version))    
+        run:
+          dir: dataworks-aws-ucfs-stub
+          path: sh
+          args:
+            - -exc
+            - |
+              docker build -t python38-custom .
+              
