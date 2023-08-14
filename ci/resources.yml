@@ -29,7 +29,7 @@ resources:
     type: docker-image
     source:
       repository: python
-      tag: 3.8 
+      tag: 3.8-alpine 
   
   - name: dw-al2-hardened-ami
     type: ami

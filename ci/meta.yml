@@ -168,6 +168,7 @@ meta:
 
     build-python3-8:
       task: build-python3-8
+      privileged: true
       config:
         platform: linux
         image_resource:
@@ -178,11 +179,18 @@ meta:
             tag: ((dataworks.docker_awscli_version))    
         run:
           dir: dataworks-aws-ucfs-stub
-          path: sh
-          args:
-            - -exc
-            - |
-              docker build -t python38-custom .
-
+          path: build 
+          # args: 
+          #   - -exc 
+          #   - |
+          #     build
         inputs: 
           - name: dataworks-aws-ucfs-stub
+          # - name: python38-docker-image
+            path: .
+        outputs:
+          - name: python3-8-image
+        params:
+          CONTEXT: dataworks-aws-ucfs-stub
+          UNPACK_ROOTFS: true
+
