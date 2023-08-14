@@ -179,6 +179,7 @@ meta:
             tag: ((dataworks.docker_awscli_version))    
         run:
           dir: dataworks-aws-ucfs-stub
+          path: sh
           args: 
             - -exc 
             - |
