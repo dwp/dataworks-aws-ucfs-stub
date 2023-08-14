@@ -180,19 +180,11 @@ meta:
         run:
           dir: dataworks-aws-ucfs-stub
           path: build
-          # args: 
-          #   - -exc 
-          #   - |
-          #     export PATH=$PATH:/dataworks-aws-ucfs-stub
-          #     build
         inputs: 
           - name: dataworks-aws-ucfs-stub
-          # - name: python38-docker-image
-            # path: .
         outputs:
           - name: python3-8-image
         params:
           CONTEXT: dataworks-aws-ucfs-stub
           PATH: $PATH:/dataworks-aws-ucfs-stub
           UNPACK_ROOTFS: true
-
