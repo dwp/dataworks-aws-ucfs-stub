@@ -179,7 +179,7 @@ meta:
             tag: ((dataworks.docker_awscli_version))    
         run:
           dir: dataworks-aws-ucfs-stub
-          path: build 
+          path: build
           # args: 
           #   - -exc 
           #   - |
@@ -187,7 +187,7 @@ meta:
         inputs: 
           - name: dataworks-aws-ucfs-stub
           # - name: python38-docker-image
-            path: .
+            # path: .
         outputs:
           - name: python3-8-image
         params:
