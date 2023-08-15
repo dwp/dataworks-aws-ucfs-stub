@@ -174,17 +174,15 @@ meta:
         image_resource:
           type: docker-image
           source:
-            repository: ((dataworks.docker_awscli_repository))
-            version: ((dataworks.docker_awscli_version))
-            tag: ((dataworks.docker_awscli_version))    
+            repository: concourse/oci-build-task
+            tag: 0.11
         run:
           dir: dataworks-aws-ucfs-stub
-          path: build
+          path: sh
+          args:
+            - -exec
+            - |
+              build
         inputs: 
           - name: dataworks-aws-ucfs-stub
-        outputs:
-          - name: python3-8-image
-        params:
-          CONTEXT: dataworks-aws-ucfs-stub
-          PATH: $PATH:/dataworks-aws-ucfs-stub
-          UNPACK_ROOTFS: true
+        

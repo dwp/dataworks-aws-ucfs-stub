@@ -5,9 +5,9 @@ jobs:
       - get: dataworks-aws-ucfs-stub
       - get: dataworks-aws-ucfs-stub-dev
         trigger: false
-      - get: python38-docker-image
-        trigger: false
-      - .: ((inject meta.plan.build-python3-8))   
+      - get: concourse-oci-docker-image
+        trigger: false 
+      - .: ((inject meta.plan.build-python3-8)) 
         input_mapping:
           dataworks-aws-ucfs-stub: dataworks-aws-ucfs-stub-dev
         config: 
