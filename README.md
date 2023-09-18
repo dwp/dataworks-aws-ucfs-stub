@@ -1,3 +1,5 @@
+# DO NOT USE THIS REPO - MIGRATED TO GITLAB
+
 # dataworks-aws-ucfs-stub
 
 ## Stub for testing tarball ingestor
